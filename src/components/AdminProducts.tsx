@@ -46,6 +46,17 @@ export default function AdminProducts() {
     fetchProducts();
   }, []);
 
+  useEffect(() => {
+    if (editorOpen) {
+      document.body.classList.add('modal-open');
+    } else {
+      document.body.classList.remove('modal-open');
+    }
+    return () => {
+      document.body.classList.remove('modal-open');
+    };
+  }, [editorOpen]);
+
   const fetchProducts = async () => {
     setLoading(true);
     try {
@@ -205,226 +216,230 @@ export default function AdminProducts() {
         </div>
       )}
 
-      <div className="action-bar flex-between" style={{ marginBottom: '20px' }}>
-        <h3>📦 Manajemen Katalog E-Commerce</h3>
-        <button className="btn btn-primary" onClick={handleOpenCreate}>
-          ➕ Tambah Produk Daur Ulang
-        </button>
-      </div>
-
-      {/* Editor Modal */}
-      {editorOpen && (
-        <div className="modal-backdrop">
-          <div className="modal-card animate-fade-in-up">
-            <div className="modal-header flex-between">
-              <h3>{editingProduct ? '✏️ Edit Produk Daur Ulang' : '➕ Tambah Produk Daur Ulang'}</h3>
-              <button className="close-btn" onClick={() => setEditorOpen(false)}>×</button>
-            </div>
-            
-            <form onSubmit={handleSaveProduct} className="modal-body">
-              <div className="grid-cols-2">
-                <div className="form-group">
-                  <label className="form-label">Nama Produk</label>
-                  <input 
-                    type="text" 
-                    className="form-control" 
-                    required 
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Kategori</label>
-                  <select 
-                    className="form-control"
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                  >
-                    <option value="Kerajinan Plastik">Kerajinan Plastik</option>
-                    <option value="Kompos">Kompos</option>
-                    <option value="Kertas Kreatif">Kertas Kreatif</option>
-                    <option value="Upcycle Kaca">Upcycle Kaca</option>
-                    <option value="Kerajinan Kayu/Logam">Kerajinan Kayu/Logam</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Deskripsi</label>
-                <textarea 
-                  className="form-control" 
-                  rows={3} 
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  style={{ resize: 'none' }}
-                />
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">URL Foto Produk</label>
-                <input 
-                  type="url" 
-                  className="form-control" 
-                  placeholder="https://..."
-                  value={imageUrl}
-                  onChange={(e) => setImageUrl(e.target.value)}
-                />
-              </div>
-
-              {/* Variants Section */}
-              <div className="variants-section">
-                <div className="flex-between" style={{ marginBottom: '10px' }}>
-                  <h4>🎨 Varian & Stok Produk</h4>
-                  <button type="button" className="btn btn-secondary btn-sm" onClick={handleAddVariantField}>
-                    ➕ Tambah Varian
-                  </button>
-                </div>
-                <p style={{ color: 'var(--muted)', fontSize: '0.8rem', marginBottom: '12px' }}>
-                  Produk harus memiliki minimal 1 varian (misal: "Ukuran S", "Warna Hijau").
-                </p>
-
-                <div className="variants-list">
-                  {variants.map((v, i) => (
-                    <div className="variant-row" key={i}>
-                      <input 
-                        type="text" 
-                        placeholder="Nama Varian (misal: S)" 
-                        className="form-control"
-                        required
-                        value={v.name}
-                        onChange={(e) => handleVariantFieldChange(i, 'name', e.target.value)}
-                      />
-                      <input 
-                        type="text" 
-                        placeholder="SKU Varian (misal: TAS-S)" 
-                        className="form-control"
-                        value={v.sku}
-                        onChange={(e) => handleVariantFieldChange(i, 'sku', e.target.value)}
-                      />
-                      <input 
-                        type="number" 
-                        placeholder="Harga (Rp)" 
-                        className="form-control"
-                        required
-                        min="1"
-                        value={v.price}
-                        onChange={(e) => handleVariantFieldChange(i, 'price', e.target.value)}
-                      />
-                      <input 
-                        type="number" 
-                        placeholder="Stok" 
-                        className="form-control"
-                        required
-                        min="0"
-                        value={v.stock}
-                        onChange={(e) => handleVariantFieldChange(i, 'stock', e.target.value)}
-                      />
-                      <button 
-                        type="button" 
-                        className="btn-remove"
-                        onClick={() => handleRemoveVariantField(i)}
-                      >
-                        ×
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="modal-footer flex-between">
-                <button type="button" className="btn btn-secondary" onClick={() => setEditorOpen(false)}>
-                  Batal
-                </button>
-                <button type="submit" className="btn btn-primary">
-                  Simpan Produk
-                </button>
-              </div>
-            </form>
+      {editorOpen ? (
+        <div className="card product-form-card animate-fade-in-up" style={{ padding: '24px', backgroundColor: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '16px', marginBottom: '24px' }}>
+          <div className="form-header flex-between" style={{ marginBottom: '20px', borderBottom: '1px solid var(--card-border)', paddingBottom: '12px' }}>
+            <h3 style={{ fontSize: '1.25rem', color: 'var(--foreground)' }}>
+              {editingProduct ? '✏️ Edit Produk Daur Ulang' : '➕ Tambah Produk Daur Ulang'}
+            </h3>
+            <button className="btn btn-secondary btn-sm" onClick={() => setEditorOpen(false)}>
+              ✕ Batal & Kembali
+            </button>
           </div>
-        </div>
-      )}
+          
+          <form onSubmit={handleSaveProduct}>
+            <div className="grid-cols-2">
+              <div className="form-group">
+                <label className="form-label">Nama Produk</label>
+                <input 
+                  type="text" 
+                  className="form-control" 
+                  required 
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Kategori</label>
+                <select 
+                  className="form-control"
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                >
+                  <option value="Kerajinan Plastik">Kerajinan Plastik</option>
+                  <option value="Kompos">Kompos</option>
+                  <option value="Kertas Kreatif">Kertas Kreatif</option>
+                  <option value="Upcycle Kaca">Upcycle Kaca</option>
+                  <option value="Kerajinan Kayu/Logam">Kerajinan Kayu/Logam</option>
+                </select>
+              </div>
+            </div>
 
-      {/* Products Grid */}
-      {loading ? (
-        <div className="flex-center" style={{ height: '200px' }}>Loading...</div>
-      ) : products.length === 0 ? (
-        <div className="card text-center" style={{ padding: '40px', color: 'var(--muted)' }}>
-          📭 Belum ada produk daur ulang. Klik "Tambah Produk" di atas.
+            <div className="form-group">
+              <label className="form-label">Deskripsi</label>
+              <textarea 
+                className="form-control" 
+                rows={3} 
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                style={{ resize: 'none' }}
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">URL Foto Produk</label>
+              <input 
+                type="url" 
+                className="form-control" 
+                placeholder="https://..."
+                value={imageUrl}
+                onChange={(e) => setImageUrl(e.target.value)}
+              />
+            </div>
+
+            {/* Variants Section */}
+            <div className="variants-section" style={{ backgroundColor: 'var(--muted-bg)', padding: '16px', borderRadius: '12px', marginTop: '16px', marginBottom: '20px' }}>
+              <div className="flex-between" style={{ marginBottom: '10px' }}>
+                <h4 style={{ margin: 0 }}>🎨 Varian & Stok Produk</h4>
+                <button type="button" className="btn btn-secondary btn-sm" onClick={handleAddVariantField}>
+                  ➕ Tambah Varian
+                </button>
+              </div>
+              <p style={{ color: 'var(--muted)', fontSize: '0.8rem', marginBottom: '12px', marginTop: '4px' }}>
+                Produk harus memiliki minimal 1 varian (misal: "Ukuran S", "Warna Hijau").
+              </p>
+
+              <div className="variants-list" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {variants.map((v, i) => (
+                  <div className="variant-row" key={i}>
+                    <input 
+                      type="text" 
+                      placeholder="Nama Varian (misal: S)" 
+                      className="form-control"
+                      required
+                      value={v.name}
+                      onChange={(e) => handleVariantFieldChange(i, 'name', e.target.value)}
+                    />
+                    <input 
+                      type="text" 
+                      placeholder="SKU Varian (misal: TAS-S)" 
+                      className="form-control"
+                      value={v.sku}
+                      onChange={(e) => handleVariantFieldChange(i, 'sku', e.target.value)}
+                    />
+                    <input 
+                      type="number" 
+                      placeholder="Harga (Rp)" 
+                      className="form-control"
+                      required
+                      min="1"
+                      value={v.price}
+                      onChange={(e) => handleVariantFieldChange(i, 'price', e.target.value)}
+                    />
+                    <input 
+                      type="number" 
+                      placeholder="Stok" 
+                      className="form-control"
+                      required
+                      min="0"
+                      value={v.stock}
+                      onChange={(e) => handleVariantFieldChange(i, 'stock', e.target.value)}
+                    />
+                    <button 
+                      type="button" 
+                      className="btn-remove"
+                      onClick={() => handleRemoveVariantField(i)}
+                      style={{ background: 'none', border: 'none', color: 'var(--danger)', fontSize: '1.8rem', cursor: 'pointer' }}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="form-actions flex-between" style={{ borderTop: '1px solid var(--card-border)', paddingTop: '20px', display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+              <button type="button" className="btn btn-secondary" onClick={() => setEditorOpen(false)}>
+                Batal
+              </button>
+              <button type="submit" className="btn btn-primary">
+                Simpan Produk
+              </button>
+            </div>
+          </form>
         </div>
       ) : (
-        <div className="table-responsive">
-          <table className="custom-table">
-            <thead>
-              <tr>
-                <th style={{ width: '80px' }}>Foto</th>
-                <th>Nama Produk</th>
-                <th>Kategori</th>
-                <th>Harga Terendah</th>
-                <th>Total Stok</th>
-                <th>Shopee Sync</th>
-                <th style={{ width: '220px' }}>Aksi</th>
-              </tr>
-            </thead>
-            <tbody>
-              {products.map((p) => (
-                <tr key={p.id}>
-                  <td>
-                    <div 
-                      className="table-img" 
-                      style={{ backgroundImage: `url(${p.image_url || 'https://images.unsplash.com/photo-1544816155-12df9643f363?q=80&w=600&auto=format&fit=crop'})` }}
-                    ></div>
-                  </td>
-                  <td>
-                    <strong>{p.name}</strong>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
-                      {p.variants.length} Varian: {p.variants.map(v => `${v.name} (${v.stock})`).join(', ')}
-                    </div>
-                  </td>
-                  <td><span className="badge badge-info">{p.category}</span></td>
-                  <td><strong>Rp {new Intl.NumberFormat('id-ID').format(p.price)}</strong></td>
-                  <td><strong>{p.stock} pcs</strong></td>
-                  <td>
-                    {p.shopee_item_id ? (
-                      <span className="badge badge-success" style={{ cursor: 'help' }} title={`Item ID: ${p.shopee_item_id}`}>
-                        🟧 Synced
-                      </span>
-                    ) : (
-                      <span className="badge badge-warning">
-                        Not Synced
-                      </span>
-                    )}
-                  </td>
-                  <td>
-                    <div className="actions-cell">
-                      <button 
-                        className="btn btn-outline" 
-                        style={{ padding: '4px 8px', fontSize: '0.8rem' }}
-                        onClick={() => handleOpenEdit(p)}
-                      >
-                        Edit
-                      </button>
-                      <button 
-                        className="btn btn-secondary" 
-                        style={{ padding: '4px 8px', fontSize: '0.8rem' }}
-                        disabled={syncingId === p.id}
-                        onClick={() => handleTriggerSync(p.id)}
-                      >
-                        {syncingId === p.id ? 'Syncing...' : '🔄 Sync Stok'}
-                      </button>
-                      <button 
-                        className="btn btn-danger" 
-                        style={{ padding: '4px 8px', fontSize: '0.8rem' }}
-                        onClick={() => handleDeleteProduct(p.id)}
-                      >
-                        Hapus
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <>
+          <div className="action-bar flex-between" style={{ marginBottom: '20px' }}>
+            <h3>📦 Manajemen Katalog E-Commerce</h3>
+            <button className="btn btn-primary" onClick={handleOpenCreate}>
+              ➕ Tambah Produk Daur Ulang
+            </button>
+          </div>
+
+          {/* Products Grid */}
+          {loading ? (
+            <div className="flex-center" style={{ height: '200px' }}>Loading...</div>
+          ) : products.length === 0 ? (
+            <div className="card text-center" style={{ padding: '40px', color: 'var(--muted)' }}>
+              📭 Belum ada produk daur ulang. Klik "Tambah Produk" di atas.
+            </div>
+          ) : (
+            <div className="table-responsive">
+              <table className="custom-table">
+                <thead>
+                  <tr>
+                    <th style={{ width: '80px' }}>Foto</th>
+                    <th>Nama Produk</th>
+                    <th>Kategori</th>
+                    <th>Harga Terendah</th>
+                    <th>Total Stok</th>
+                    <th>Shopee Sync</th>
+                    <th style={{ width: '220px' }}>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {products.map((p) => (
+                    <tr key={p.id}>
+                      <td>
+                        <div 
+                          className="table-img" 
+                          style={{ backgroundImage: `url(${p.image_url || 'https://images.unsplash.com/photo-1544816155-12df9643f363?q=80&w=600&auto=format&fit=crop'})` }}
+                        ></div>
+                      </td>
+                      <td>
+                        <strong>{p.name}</strong>
+                        <div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
+                          {p.variants.length} Varian: {p.variants.map(v => `${v.name} (${v.stock})`).join(', ')}
+                        </div>
+                      </td>
+                      <td><span className="badge badge-info">{p.category}</span></td>
+                      <td><strong>Rp {new Intl.NumberFormat('id-ID').format(p.price)}</strong></td>
+                      <td><strong>{p.stock} pcs</strong></td>
+                      <td>
+                        {p.shopee_item_id ? (
+                          <span className="badge badge-success" style={{ cursor: 'help' }} title={`Item ID: ${p.shopee_item_id}`}>
+                            🟧 Synced
+                          </span>
+                        ) : (
+                          <span className="badge badge-warning">
+                            Not Synced
+                          </span>
+                        )}
+                      </td>
+                      <td>
+                        <div className="actions-cell" style={{ display: 'flex', gap: '6px' }}>
+                          <button 
+                            className="btn btn-outline" 
+                            style={{ padding: '4px 8px', fontSize: '0.8rem' }}
+                            onClick={() => handleOpenEdit(p)}
+                          >
+                            Edit
+                          </button>
+                          <button 
+                            className="btn btn-secondary" 
+                            style={{ padding: '4px 8px', fontSize: '0.8rem' }}
+                            disabled={syncingId === p.id}
+                            onClick={() => handleTriggerSync(p.id)}
+                          >
+                            {syncingId === p.id ? 'Syncing...' : '🔄 Sync Stok'}
+                          </button>
+                          <button 
+                            className="btn btn-danger" 
+                            style={{ padding: '4px 8px', fontSize: '0.8rem' }}
+                            onClick={() => handleDeleteProduct(p.id)}
+                          >
+                            Hapus
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </>
       )}
 
       <style jsx>{`
@@ -457,9 +472,6 @@ export default function AdminProducts() {
 
         .actions-cell {
           display: flex;
-          gap: 6px;
-        }
-
         /* Modal Styles */
         .modal-backdrop {
           position: fixed;
@@ -471,9 +483,10 @@ export default function AdminProducts() {
           backdrop-filter: blur(4px);
           z-index: 1000;
           display: flex;
-          align-items: center;
+          align-items: flex-start;
           justify-content: center;
-          padding: 20px;
+          padding: 40px 20px;
+          overflow-y: auto;
         }
         .modal-card {
           background-color: var(--card-bg);
@@ -482,9 +495,12 @@ export default function AdminProducts() {
           width: 100%;
           max-width: 650px;
           box-shadow: var(--shadow-lg);
-          max-height: 90vh;
+          max-height: calc(100vh - 80px);
           display: flex;
           flex-direction: column;
+        }
+        :global(body.modal-open .navbar) {
+          z-index: 10 !important;
         }
         .modal-header {
           padding: 20px 24px;
@@ -509,7 +525,7 @@ export default function AdminProducts() {
           border-bottom-left-radius: 16px;
           border-bottom-right-radius: 16px;
         }
-
+ 
         /* Variants editor grid */
         .variants-section {
           background-color: var(--muted-bg);
@@ -545,6 +561,33 @@ export default function AdminProducts() {
           padding: 4px 10px;
           font-size: 0.8rem;
           border-radius: 6px;
+        }
+
+        @media (max-width: 576px) {
+          .variant-row {
+            grid-template-columns: 1fr 1fr !important;
+            gap: 8px !important;
+            padding-bottom: 16px;
+            border-bottom: 1px dashed var(--card-border);
+            position: relative;
+          }
+          .variant-row input:nth-child(1),
+          .variant-row input:nth-child(2) {
+            grid-column: span 2 !important;
+          }
+          .btn-remove {
+            position: absolute;
+            top: 2px;
+            right: 0;
+            width: 30px;
+            height: 30px;
+          }
+          .modal-backdrop {
+            padding: 20px 10px;
+          }
+          .modal-card {
+            max-height: calc(100vh - 40px);
+          }
         }
       `}</style>
     </div>

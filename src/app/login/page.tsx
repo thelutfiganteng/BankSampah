@@ -23,7 +23,7 @@ export default function Login() {
         } else {
           router.replace('/');
         }
-      } catch (e) {}
+      } catch (e) { }
     }
   }, [router]);
 
@@ -47,7 +47,7 @@ export default function Login() {
         setSuccess(true);
         localStorage.setItem('banksampah_user', JSON.stringify(data.user));
         window.dispatchEvent(new Event('user-login'));
-        
+
         setTimeout(() => {
           setSuccess(false);
           if (data.user.role === 'ADMIN') {
@@ -82,11 +82,11 @@ export default function Login() {
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label className="form-label">Alamat Email</label>
-            <input 
-              type="email" 
-              className="form-control" 
+            <input
+              type="email"
+              className="form-control"
               placeholder="nama@email.com"
-              required 
+              required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={loading || success}
@@ -95,11 +95,11 @@ export default function Login() {
 
           <div className="form-group" style={{ marginBottom: '24px' }}>
             <label className="form-label">Password</label>
-            <input 
-              type="password" 
-              className="form-control" 
+            <input
+              type="password"
+              className="form-control"
               placeholder="••••••••"
-              required 
+              required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               disabled={loading || success}
@@ -115,7 +115,7 @@ export default function Login() {
             ) : success ? (
               <span style={{ display: 'inline-flex', alignItems: 'center' }}>
                 <svg className="checkmark-svg" viewBox="0 0 24 24" fill="none">
-                  <path d="M5 13l4 4L19 7" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M5 13l4 4L19 7" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
                 Masuk Berhasil!
               </span>
@@ -129,14 +129,14 @@ export default function Login() {
           Belum punya akun? <Link href="/register" style={{ color: 'var(--primary)', fontWeight: '600' }}>Daftar Sekarang</Link>
         </div>
 
-        <div className="card demo-creds-card" style={{ marginTop: '24px', backgroundColor: 'var(--muted-bg)', border: '1px dashed var(--card-border)' }}>
+        {/* <div className="card demo-creds-card" style={{ marginTop: '24px', backgroundColor: 'var(--muted-bg)', border: '1px dashed var(--card-border)' }}>
           <h4 style={{ fontSize: '0.85rem', marginBottom: '8px', color: 'var(--primary)' }}>🔑 Akun Demo Pengujian:</h4>
           <ul style={{ fontSize: '0.8rem', paddingLeft: '16px', listStyleType: 'disc', display: 'flex', flexDirection: 'column', gap: '4px' }}>
             <li><strong>Admin</strong>: <code>admin@banksampaheco.org</code> / password: <code>admin123</code></li>
             <li><strong>Nasabah (Budi)</strong>: <code>budi@gmail.com</code> / password: <code>budi123</code></li>
             <li><strong>Nasabah (Siti)</strong>: <code>siti@gmail.com</code> / password: <code>siti123</code></li>
           </ul>
-        </div>
+        </div> */}
       </div>
 
       <style jsx>{`

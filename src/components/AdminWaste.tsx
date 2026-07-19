@@ -2,6 +2,14 @@
 
 import { useState, useEffect } from 'react';
 
+const POINT_RATES: Record<string, number> = {
+  'Plastik': 2000,
+  'Kertas': 1500,
+  'Logam': 5000,
+  'Kaca': 1000,
+  'Organik': 500,
+};
+
 export default function AdminWaste() {
   const [members, setMembers] = useState<any[]>([]);
   const [recentDeposits, setRecentDeposits] = useState<any[]>([]);
@@ -12,6 +20,11 @@ export default function AdminWaste() {
   const [newMember, setNewMember] = useState({ name: '', phone: '', address: '' });
   const [deposit, setDeposit] = useState({ memberId: '', wasteType: 'Plastik', weight: '', notes: '' });
   
+  // Verification states for pending user deposits
+  const [actualWeights, setActualWeights] = useState<Record<number, string>>({});
+  const [notesUpdates, setNotesUpdates] = useState<Record<number, string>>({});
+  const [verifyLoading, setVerifyLoading] = useState<Record<number, boolean>>({});
+
   // Status flags
   const [memberLoading, setMemberLoading] = useState(false);
   const [depositLoading, setDepositLoading] = useState(false);
@@ -38,7 +51,18 @@ export default function AdminWaste() {
     try {
       const res = await fetch('/api/deposit');
       const data = await res.json();
-      if (data.success) setRecentDeposits(data.data);
+      if (data.success) {
+        setRecentDeposits(data.data);
+        
+        // Pre-fill verification weights with estimated weights
+        const weights: Record<number, string> = {};
+        data.data.forEach((d: any) => {
+          if (d.status === 'PENDING') {
+            weights[d.id] = d.weight.toString();
+          }
+        });
+        setActualWeights(weights);
+      }
     } catch (e) {
       console.error(e);
     }
@@ -91,7 +115,10 @@ export default function AdminWaste() {
       const res = await fetch('/api/deposit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(deposit),
+        body: JSON.stringify({
+          ...deposit,
+          status: 'APPROVED', // Manual deposits by Admin are auto-approved
+        }),
       });
       const data = await res.json();
       if (res.ok) {
@@ -107,6 +134,66 @@ export default function AdminWaste() {
       setErrorMsg('Masalah koneksi jaringan.');
     } finally {
       setDepositLoading(false);
+    }
+  };
+
+  const handleVerifyDeposit = async (depositId: number, status: 'APPROVED' | 'REJECTED') => {
+    const depositItem = recentDeposits.find(d => d.id === depositId);
+    if (!depositItem) return;
+
+    const actualWeight = actualWeights[depositId] || '0';
+    const notesUpdate = notesUpdates[depositId] || '';
+    const rate = POINT_RATES[depositItem.waste_type] || 0;
+    const estPoints = Math.round(parseFloat(actualWeight) * rate);
+
+    const actionText = status === 'APPROVED' ? 'MENYETUJUI' : 'MENOLAK';
+    const confirmMsg = status === 'APPROVED'
+      ? `Apakah Anda yakin ingin MENYETUJUI setoran sampah ini?\n\n` +
+        `Nama Nasabah: ${depositItem.member_name}\n` +
+        `Kategori Sampah: ${depositItem.waste_type} (Rp ${new Intl.NumberFormat('id-ID').format(rate)}/kg)\n` +
+        `Berat Fisik: ${actualWeight} kg\n` +
+        `Total Nilai Saldo: Rp ${new Intl.NumberFormat('id-ID').format(estPoints)}\n\n` +
+        `Saldo nasabah akan langsung bertambah dan bahan baku gudang akan diperbarui.`
+      : `Apakah Anda yakin ingin MENOLAK setoran sampah ini?\n\n` +
+        `Nama Nasabah: ${depositItem.member_name}\n` +
+        `Kategori Sampah: ${depositItem.waste_type}\n\n` +
+        `Setoran ini akan ditolak secara permanen.`;
+
+    if (!window.confirm(confirmMsg)) {
+      return;
+    }
+
+    setVerifyLoading(prev => ({ ...prev, [depositId]: true }));
+    setErrorMsg('');
+    setSuccessMsg('');
+
+    try {
+      const res = await fetch('/api/deposit', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          depositId,
+          status,
+          actualWeight: actualWeight ? parseFloat(actualWeight) : undefined,
+          notes: notesUpdate || undefined
+        })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setSuccessMsg(status === 'APPROVED' 
+          ? `Setoran berhasil disetujui! Saldo ditambahkan.` 
+          : 'Setoran berhasil ditolak.'
+        );
+        fetchDeposits();
+        fetchMembers();
+        fetchRawMaterials();
+      } else {
+        setErrorMsg(data.error || 'Gagal memproses setoran.');
+      }
+    } catch (e) {
+      setErrorMsg('Masalah koneksi jaringan.');
+    } finally {
+      setVerifyLoading(prev => ({ ...prev, [depositId]: false }));
     }
   };
 
@@ -126,7 +213,7 @@ export default function AdminWaste() {
         <div className="form-column">
           {/* Section: Log Deposit */}
           <div className="card">
-            <h3>📝 Catat Setoran Sampah</h3>
+            <h3>📝 Catat Setoran Sampah (Langsung)</h3>
             <form onSubmit={handleLogDeposit} style={{ marginTop: '16px' }}>
               <div className="form-group">
                 <label className="form-label">Pilih Nasabah</label>
@@ -315,6 +402,131 @@ export default function AdminWaste() {
         </div>
       </div>
 
+      {/* NEW SECTION: Confirm & Verify User Waste Deposits */}
+      <div className="card" style={{ marginTop: '30px' }}>
+        <h3>⏳ Konfirmasi & Verifikasi Setoran Sampah Warga</h3>
+        <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginTop: '4px', marginBottom: '20px' }}>
+          Timbang fisik kiriman sampah warga di bawah ini, sesuaikan berat aktualnya, lalu klik Setujui untuk memproses poin/saldo masuk.
+        </p>
+
+        <div className="table-responsive">
+          <table className="custom-table">
+            <thead>
+              <tr>
+                <th>Tanggal</th>
+                <th>Nama Nasabah</th>
+                <th>Kategori</th>
+                <th>Berat Estimasi</th>
+                <th>Berat Aktual (Fisik)</th>
+                <th>Total Saldo</th>
+                <th>Catatan Warga / Catatan Verifikasi</th>
+                <th style={{ width: '220px' }}>Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              {recentDeposits.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="text-center" style={{ color: 'var(--muted)', padding: '24px' }}>
+                    Belum ada riwayat setoran sampah warga.
+                  </td>
+                </tr>
+              ) : (
+                recentDeposits.map((dep) => {
+                  const isPending = dep.status === 'PENDING';
+                  const rate = POINT_RATES[dep.waste_type] || 0;
+                  const currentWeight = isPending
+                    ? parseFloat(actualWeights[dep.id] || '0')
+                    : dep.weight;
+                  const currentTotal = isPending
+                    ? Math.round((isNaN(currentWeight) ? 0 : currentWeight) * rate)
+                    : dep.points;
+
+                  return (
+                    <tr key={dep.id}>
+                      <td>{new Date(dep.deposit_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</td>
+                      <td>
+                        <strong>{dep.member_name}</strong>
+                      </td>
+                      <td>
+                        <span className="badge badge-info" style={{ backgroundColor: 'rgba(59, 130, 246, 0.1)', color: '#1e40af', padding: '4px 8px', borderRadius: '4px' }}>
+                          {dep.waste_type}
+                        </span>
+                      </td>
+                      <td>{dep.weight} kg</td>
+                      <td>
+                        {isPending ? (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <input 
+                              type="number" 
+                              step="0.1"
+                              className="form-control"
+                              style={{ width: '80px', padding: '4px 8px', fontSize: '0.9rem' }}
+                              value={actualWeights[dep.id] || ''}
+                              onChange={(e) => setActualWeights({ ...actualWeights, [dep.id]: e.target.value })}
+                            />
+                            <span>kg</span>
+                          </div>
+                        ) : (
+                          <span>{dep.weight} kg (verified)</span>
+                        )}
+                      </td>
+                      <td>
+                        <strong>Rp {new Intl.NumberFormat('id-ID').format(currentTotal)}</strong>
+                        {isPending && (
+                          <div style={{ fontSize: '0.72rem', color: 'var(--muted)', marginTop: '2px' }}>
+                            Estimasi: Rp {new Intl.NumberFormat('id-ID').format(dep.points)}
+                          </div>
+                        )}
+                      </td>
+                      <td>
+                        {isPending ? (
+                          <input 
+                            type="text" 
+                            className="form-control"
+                            placeholder="Sesuaikan keterangan..."
+                            style={{ padding: '4px 8px', fontSize: '0.85rem' }}
+                            value={notesUpdates[dep.id] || dep.notes || ''}
+                            onChange={(e) => setNotesUpdates({ ...notesUpdates, [dep.id]: e.target.value })}
+                          />
+                        ) : (
+                          <span style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>{dep.notes || '-'}</span>
+                        )}
+                      </td>
+                      <td>
+                        {isPending ? (
+                          <div style={{ display: 'flex', gap: '8px' }}>
+                            <button
+                              className="btn btn-primary"
+                              style={{ padding: '6px 12px', fontSize: '0.85rem', flex: 1 }}
+                              disabled={verifyLoading[dep.id]}
+                              onClick={() => handleVerifyDeposit(dep.id, 'APPROVED')}
+                            >
+                              {verifyLoading[dep.id] ? '...' : '✓ Setujui'}
+                            </button>
+                            <button
+                              className="btn btn-danger"
+                              style={{ padding: '6px 12px', fontSize: '0.85rem' }}
+                              disabled={verifyLoading[dep.id]}
+                              onClick={() => handleVerifyDeposit(dep.id, 'REJECTED')}
+                            >
+                              ✕ Tolak
+                            </button>
+                          </div>
+                        ) : (
+                          <span className={`status-badge-admin status-${dep.status.toLowerCase()}`}>
+                            {dep.status === 'APPROVED' ? '✅ Sukses Terverifikasi' : '❌ Ditolak'}
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <style jsx>{`
         .success-banner {
           background-color: rgba(34, 197, 94, 0.1);
@@ -377,6 +589,21 @@ export default function AdminWaste() {
           max-width: 180px;
           padding: 6px 12px;
           font-size: 0.85rem;
+        }
+
+        .status-badge-admin {
+          font-weight: 700;
+          font-size: 0.82rem;
+          padding: 4px 8px;
+          border-radius: 4px;
+        }
+        .status-approved {
+          background-color: rgba(34, 197, 94, 0.1);
+          color: #166534;
+        }
+        .status-rejected {
+          background-color: rgba(239, 68, 68, 0.1);
+          color: #991b1b;
         }
       `}</style>
     </div>

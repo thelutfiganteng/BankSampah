@@ -85,6 +85,16 @@ export function initDb() {
     tableNeedsRecreation = true;
   }
 
+  // Check if we need to migrate/recreate for waste_deposits status column
+  if (!tableNeedsRecreation) {
+    try {
+      runSql('SELECT status FROM waste_deposits LIMIT 1;');
+    } catch (err) {
+      console.log('Database schema upgrade: adding status to waste_deposits...');
+      tableNeedsRecreation = true;
+    }
+  }
+
   if (tableNeedsRecreation) {
     try {
       runSql('DROP TABLE IF EXISTS order_items;');
@@ -126,6 +136,7 @@ export function initDb() {
       points INTEGER NOT NULL,
       deposit_date DATETIME DEFAULT CURRENT_TIMESTAMP,
       notes TEXT,
+      status TEXT DEFAULT 'APPROVED', -- PENDING, APPROVED, REJECTED
       FOREIGN KEY (member_id) REFERENCES members(id) ON DELETE CASCADE
     );
   `);

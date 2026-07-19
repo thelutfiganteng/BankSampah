@@ -124,6 +124,15 @@ export default function Navbar() {
           </li>
           <li>
             <Link 
+              href="/jual-sampah" 
+              className={`nav-link ${isActive('/jual-sampah') ? 'active' : ''}`}
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Jual Sampah 💰
+            </Link>
+          </li>
+          <li>
+            <Link 
               href="/katalog" 
               className={`nav-link ${isActive('/katalog') ? 'active' : ''}`}
               onClick={() => setMobileMenuOpen(false)}
@@ -142,6 +151,18 @@ export default function Navbar() {
           </li>
 
           {/* Conditional Admin Link */}
+          {currentUser && (
+            <li>
+              <Link 
+                href="/profil" 
+                className={`nav-link ${isActive('/profil') ? 'active' : ''}`}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Profil Saya 👤
+              </Link>
+            </li>
+          )}
+
           {currentUser && currentUser.role === 'ADMIN' && (
             <li>
               <Link 
@@ -156,7 +177,7 @@ export default function Navbar() {
 
           {cartCount > 0 && (
             <li className="cart-badge-container">
-              <Link href="/katalog" className="cart-nav-link" onClick={() => setMobileMenuOpen(false)}>
+              <Link href="/profil?tab=cart" className="cart-nav-link" onClick={() => setMobileMenuOpen(false)}>
                 🛒 <span className="cart-count-pill">{cartCount}</span>
               </Link>
             </li>
@@ -165,9 +186,11 @@ export default function Navbar() {
           {/* Auth State Conditional Rendering */}
           {currentUser ? (
             <li className="user-profile-menu">
-              <span className="user-info-text">
-                👤 {currentUser.name} ({currentUser.role === 'ADMIN' ? 'Admin' : `Rp ${new Intl.NumberFormat('id-ID').format(currentUser.balance || 0)}`})
-              </span>
+              <Link href="/profil" style={{ textDecoration: 'none', color: 'inherit' }} onClick={() => setMobileMenuOpen(false)}>
+                <span className="user-info-text" style={{ cursor: 'pointer' }}>
+                  👤 {currentUser.name} ({currentUser.role === 'ADMIN' ? 'Admin' : `Rp ${new Intl.NumberFormat('id-ID').format(currentUser.balance || 0)}`})
+                </span>
+              </Link>
               <button onClick={handleLogout} className="btn btn-outline btn-sm logout-btn">
                 Keluar
               </button>

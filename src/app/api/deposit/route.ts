@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { executeSql, queryOne, queryAll } from '@/lib/db';
 import { supabase, isSupabaseConfigured } from '@/lib/supabaseClient';
+import { mapDatabaseError } from '@/lib/friendlyError';
 
 const POINT_RATES: Record<string, number> = {
   'Plastik': 2000,
@@ -61,14 +62,14 @@ export async function GET(request: Request) {
     `);
     return NextResponse.json({ success: true, data: allDeposits });
   } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: mapDatabaseError(error) }, { status: 500 });
   }
 }
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { memberId, wasteType, weight, notes } = body;
+    const { memberId, wasteType, weight, notes, status } = body;
 
     if (!memberId || !wasteType || weight === undefined) {
       return NextResponse.json({ success: false, error: 'Missing parameters' }, { status: 400 });
@@ -78,6 +79,10 @@ export async function POST(request: Request) {
     if (isNaN(parsedWeight) || parsedWeight <= 0) {
       return NextResponse.json({ success: false, error: 'Weight must be greater than 0' }, { status: 400 });
     }
+
+    const depositStatus = status || 'APPROVED'; // PENDING, APPROVED, REJECTED
+    const rate = POINT_RATES[wasteType] || 0;
+    const pointsEarned = Math.round(parsedWeight * rate);
 
     if (isSupabaseConfigured()) {
       // Verify member exists
@@ -91,9 +96,6 @@ export async function POST(request: Request) {
         return NextResponse.json({ success: false, error: 'Member not found' }, { status: 404 });
       }
 
-      const rate = POINT_RATES[wasteType] || 0;
-      const pointsEarned = Math.round(parsedWeight * rate);
-
       // 1. Insert deposit record
       const { error: depositError } = await supabase
         .from('waste_deposits')
@@ -102,32 +104,37 @@ export async function POST(request: Request) {
           waste_type: wasteType,
           weight: parsedWeight,
           points: pointsEarned,
-          notes: notes || ''
+          notes: notes || '',
+          status: depositStatus
         }]);
       if (depositError) throw depositError;
 
-      // 2. Update member balance
-      const newBalance = (member.balance || 0) + pointsEarned;
-      const { error: updateMemberError } = await supabase
-        .from('members')
-        .update({ balance: newBalance })
-        .eq('id', memberId);
-      if (updateMemberError) throw updateMemberError;
+      // Only update balance and stock if it is immediately approved (admin workflow)
+      let newBalance = member.balance || 0;
+      if (depositStatus === 'APPROVED') {
+        // 2. Update member balance
+        newBalance = (member.balance || 0) + pointsEarned;
+        const { error: updateMemberError } = await supabase
+          .from('members')
+          .update({ balance: newBalance })
+          .eq('id', memberId);
+        if (updateMemberError) throw updateMemberError;
 
-      // 3. Update raw materials stock
-      const { data: rawMat, error: rawError } = await supabase
-        .from('raw_materials')
-        .select('stock_kg')
-        .eq('waste_type', wasteType)
-        .maybeSingle();
-      if (rawError) throw rawError;
-      
-      const currentStock = rawMat?.stock_kg || 0;
-      const { error: updateRawError } = await supabase
-        .from('raw_materials')
-        .update({ stock_kg: currentStock + parsedWeight })
-        .eq('waste_type', wasteType);
-      if (updateRawError) throw updateRawError;
+        // 3. Update raw materials stock
+        const { data: rawMat, error: rawError } = await supabase
+          .from('raw_materials')
+          .select('stock_kg')
+          .eq('waste_type', wasteType)
+          .maybeSingle();
+        if (rawError) throw rawError;
+        
+        const currentStock = rawMat?.stock_kg || 0;
+        const { error: updateRawError } = await supabase
+          .from('raw_materials')
+          .update({ stock_kg: currentStock + parsedWeight })
+          .eq('waste_type', wasteType);
+        if (updateRawError) throw updateRawError;
+      }
 
       return NextResponse.json({
         success: true,
@@ -138,42 +145,194 @@ export async function POST(request: Request) {
       });
     }
 
-    // Verify member exists
+    // SQLite Mode
     const member = queryOne('SELECT * FROM members WHERE id = ?', [memberId]);
     if (!member) {
       return NextResponse.json({ success: false, error: 'Member not found' }, { status: 404 });
     }
 
-    // Calculate points/balance earned
-    const rate = POINT_RATES[wasteType] || 0;
-    const pointsEarned = Math.round(parsedWeight * rate);
-
     // Insert deposit record
     executeSql(
-      'INSERT INTO waste_deposits (member_id, waste_type, weight, points, notes) VALUES (?, ?, ?, ?, ?)',
-      [memberId, wasteType, parsedWeight, pointsEarned, notes || '']
+      'INSERT INTO waste_deposits (member_id, waste_type, weight, points, notes, status) VALUES (?, ?, ?, ?, ?, ?)',
+      [memberId, wasteType, parsedWeight, pointsEarned, notes || '', depositStatus]
     );
 
-    // Update member balance
-    executeSql(
-      'UPDATE members SET balance = balance + ? WHERE id = ?',
-      [pointsEarned, memberId]
-    );
+    let newBalance = member.balance;
+    if (depositStatus === 'APPROVED') {
+      newBalance = member.balance + pointsEarned;
+      // Update member balance
+      executeSql(
+        'UPDATE members SET balance = balance + ? WHERE id = ?',
+        [pointsEarned, memberId]
+      );
 
-    // Update raw materials stock
-    executeSql(
-      'UPDATE raw_materials SET stock_kg = stock_kg + ? WHERE waste_type = ?',
-      [parsedWeight, wasteType]
-    );
+      // Update raw materials stock
+      executeSql(
+        'UPDATE raw_materials SET stock_kg = stock_kg + ? WHERE waste_type = ?',
+        [parsedWeight, wasteType]
+      );
+    }
 
     return NextResponse.json({
       success: true,
       data: {
         pointsEarned,
-        newBalance: member.balance + pointsEarned,
+        newBalance,
       },
     });
   } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: mapDatabaseError(error) }, { status: 500 });
+  }
+}
+
+export async function PUT(request: Request) {
+  try {
+    const body = await request.json();
+    const { depositId, status, actualWeight, notes } = body;
+
+    if (!depositId || !status) {
+      return NextResponse.json({ success: false, error: 'Missing parameters' }, { status: 400 });
+    }
+
+    if (status !== 'APPROVED' && status !== 'REJECTED') {
+      return NextResponse.json({ success: false, error: 'Invalid status' }, { status: 400 });
+    }
+
+    if (isSupabaseConfigured()) {
+      // 1. Get current deposit details
+      const { data: deposit, error: depError } = await supabase
+        .from('waste_deposits')
+        .select('*')
+        .eq('id', depositId)
+        .maybeSingle();
+
+      if (depError) throw depError;
+      if (!deposit) {
+        return NextResponse.json({ success: false, error: 'Deposit not found' }, { status: 404 });
+      }
+
+      if (deposit.status !== 'PENDING') {
+        return NextResponse.json({ success: false, error: 'Deposit is already processed' }, { status: 400 });
+      }
+
+      // If approved, we need to apply balance and stock changes
+      if (status === 'APPROVED') {
+        const parsedWeight = parseFloat(actualWeight || deposit.weight);
+        if (isNaN(parsedWeight) || parsedWeight <= 0) {
+          return NextResponse.json({ success: false, error: 'Invalid weight' }, { status: 400 });
+        }
+
+        const rate = POINT_RATES[deposit.waste_type] || 0;
+        const pointsEarned = Math.round(parsedWeight * rate);
+
+        // Fetch member
+        const { data: member, error: memError } = await supabase
+          .from('members')
+          .select('*')
+          .eq('id', deposit.member_id)
+          .maybeSingle();
+        if (memError) throw memError;
+        if (!member) {
+          return NextResponse.json({ success: false, error: 'Member not found' }, { status: 404 });
+        }
+
+        // Update deposit status, verified weight, and points
+        const { error: updError } = await supabase
+          .from('waste_deposits')
+          .update({
+            status: 'APPROVED',
+            weight: parsedWeight,
+            points: pointsEarned,
+            notes: notes || deposit.notes
+          })
+          .eq('id', depositId);
+        if (updError) throw updError;
+
+        // Update member balance
+        const newBalance = (member.balance || 0) + pointsEarned;
+        const { error: memUpdError } = await supabase
+          .from('members')
+          .update({ balance: newBalance })
+          .eq('id', deposit.member_id);
+        if (memUpdError) throw memUpdError;
+
+        // Update raw materials stock
+        const { data: rawMat, error: rawError } = await supabase
+          .from('raw_materials')
+          .select('stock_kg')
+          .eq('waste_type', deposit.waste_type)
+          .maybeSingle();
+        if (rawError) throw rawError;
+
+        const currentStock = rawMat?.stock_kg || 0;
+        const { error: rawUpdError } = await supabase
+          .from('raw_materials')
+          .update({ stock_kg: currentStock + parsedWeight })
+          .eq('waste_type', deposit.waste_type);
+        if (rawUpdError) throw rawUpdError;
+
+        return NextResponse.json({ success: true, data: { pointsEarned, newBalance } });
+      } else {
+        // REJECTED
+        const { error: updError } = await supabase
+          .from('waste_deposits')
+          .update({
+            status: 'REJECTED',
+            notes: notes || deposit.notes
+          })
+          .eq('id', depositId);
+        if (updError) throw updError;
+
+        return NextResponse.json({ success: true, data: { status: 'REJECTED' } });
+      }
+    }
+
+    // SQLite Mode
+    const deposit = queryOne('SELECT * FROM waste_deposits WHERE id = ?', [depositId]);
+    if (!deposit) {
+      return NextResponse.json({ success: false, error: 'Deposit not found' }, { status: 404 });
+    }
+
+    if (deposit.status !== 'PENDING') {
+      return NextResponse.json({ success: false, error: 'Deposit is already processed' }, { status: 400 });
+    }
+
+    if (status === 'APPROVED') {
+      const parsedWeight = parseFloat(actualWeight || deposit.weight);
+      if (isNaN(parsedWeight) || parsedWeight <= 0) {
+        return NextResponse.json({ success: false, error: 'Invalid weight' }, { status: 400 });
+      }
+
+      const rate = POINT_RATES[deposit.waste_type] || 0;
+      const pointsEarned = Math.round(parsedWeight * rate);
+
+      const member = queryOne('SELECT * FROM members WHERE id = ?', [deposit.member_id]);
+      if (!member) {
+        return NextResponse.json({ success: false, error: 'Member not found' }, { status: 404 });
+      }
+
+      // Update deposit
+      executeSql(
+        'UPDATE waste_deposits SET status = ?, weight = ?, points = ?, notes = ? WHERE id = ?',
+        ['APPROVED', parsedWeight, pointsEarned, notes || deposit.notes, depositId]
+      );
+
+      // Update member balance
+      executeSql('UPDATE members SET balance = balance + ? WHERE id = ?', [pointsEarned, deposit.member_id]);
+
+      // Update stock
+      executeSql('UPDATE raw_materials SET stock_kg = stock_kg + ? WHERE waste_type = ?', [parsedWeight, deposit.waste_type]);
+
+      return NextResponse.json({ success: true, data: { pointsEarned, newBalance: member.balance + pointsEarned } });
+    } else {
+      // REJECTED
+      executeSql(
+        'UPDATE waste_deposits SET status = ?, notes = ? WHERE id = ?',
+        ['REJECTED', notes || deposit.notes, depositId]
+      );
+      return NextResponse.json({ success: true, data: { status: 'REJECTED' } });
+    }
+  } catch (error: any) {
+    return NextResponse.json({ success: false, error: mapDatabaseError(error) }, { status: 500 });
   }
 }

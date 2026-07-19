@@ -7,6 +7,7 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
+    const email = searchParams.get('email');
 
     if (isSupabaseConfigured()) {
       if (id) {
@@ -22,45 +23,66 @@ export async function GET(request: Request) {
         
         const { data: items, error: itemsError } = await supabase
           .from('order_items')
-          .select(`
-            *,
-            products ( name ),
-            product_variants ( name )
-          `)
+          .select('*')
           .eq('order_id', parseInt(id));
         if (itemsError) throw itemsError;
 
-        const mappedItems = items?.map((oi: any) => ({
-          ...oi,
-          product_name: oi.products?.name || 'Unknown',
-          variant_name: oi.product_variants?.name || 'Unknown'
+        const productIds = Array.from(new Set(items?.map((item: any) => item.product_id).filter(Boolean) || []));
+        const variantIds = Array.from(new Set(items?.map((item: any) => item.variant_id).filter(Boolean) || []));
+
+        const { data: productsData } = productIds.length > 0 
+          ? await supabase.from('products').select('id, name').in('id', productIds)
+          : { data: [] };
+        
+        const { data: variantsData } = variantIds.length > 0
+          ? await supabase.from('product_variants').select('id, name').in('id', variantIds)
+          : { data: [] };
+
+        const productMap = new Map(productsData?.map((p: any) => [p.id, p.name]) || []);
+        const variantMap = new Map(variantsData?.map((v: any) => [v.id, v.name]) || []);
+
+        const mappedItems = items?.map((item: any) => ({
+          ...item,
+          product_name: productMap.get(item.product_id) || 'Unknown',
+          variant_name: variantMap.get(item.variant_id) || 'Unknown'
         })) || [];
 
         return NextResponse.json({ success: true, data: { ...order, items: mappedItems } });
       }
 
-      const { data: orders, error: ordersError } = await supabase
-        .from('orders')
-        .select('*')
-        .order('created_at', { ascending: false });
+      let query = supabase.from('orders').select('*');
+      if (email) {
+        query = query.eq('customer_email', email);
+      }
+      const { data: orders, error: ordersError } = await query.order('created_at', { ascending: false });
       if (ordersError) throw ordersError;
 
       const result = [];
       for (const order of orders || []) {
         const { data: items, error: itemsError } = await supabase
           .from('order_items')
-          .select(`
-            *,
-            products ( name ),
-            product_variants ( name )
-          `)
+          .select('*')
           .eq('order_id', order.id);
         if (itemsError) throw itemsError;
 
-        const mappedItems = items?.map((oi: any) => ({
-          ...oi,
-          product_name: oi.products?.name || 'Unknown',
-          variant_name: oi.product_variants?.name || 'Unknown'
+        const productIds = Array.from(new Set(items?.map((item: any) => item.product_id).filter(Boolean) || []));
+        const variantIds = Array.from(new Set(items?.map((item: any) => item.variant_id).filter(Boolean) || []));
+
+        const { data: productsData } = productIds.length > 0 
+          ? await supabase.from('products').select('id, name').in('id', productIds)
+          : { data: [] };
+        
+        const { data: variantsData } = variantIds.length > 0
+          ? await supabase.from('product_variants').select('id, name').in('id', variantIds)
+          : { data: [] };
+
+        const productMap = new Map(productsData?.map((p: any) => [p.id, p.name]) || []);
+        const variantMap = new Map(variantsData?.map((v: any) => [v.id, v.name]) || []);
+
+        const mappedItems = items?.map((item: any) => ({
+          ...item,
+          product_name: productMap.get(item.product_id) || 'Unknown',
+          variant_name: variantMap.get(item.variant_id) || 'Unknown'
         })) || [];
 
         result.push({ ...order, items: mappedItems });
@@ -85,7 +107,10 @@ export async function GET(request: Request) {
       return NextResponse.json({ success: true, data: { ...order, items } });
     }
 
-    const orders = queryAll('SELECT * FROM orders ORDER BY created_at DESC');
+    const orders = email
+      ? queryAll('SELECT * FROM orders WHERE customer_email = ? ORDER BY created_at DESC', [email])
+      : queryAll('SELECT * FROM orders ORDER BY created_at DESC');
+      
     const result = orders.map(order => {
       const items = queryAll(`
         SELECT oi.*, p.name as product_name, pv.name as variant_name

@@ -3,15 +3,34 @@ import { executeSql, queryOne, queryAll } from '@/lib/db';
 import { supabase, isSupabaseConfigured } from '@/lib/supabaseClient';
 import { mapDatabaseError } from '@/lib/friendlyError';
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+
     if (isSupabaseConfigured()) {
+      if (id) {
+        const { data, error } = await supabase
+          .from('members')
+          .select('*')
+          .eq('id', parseInt(id))
+          .maybeSingle();
+        if (error) throw error;
+        return NextResponse.json({ success: true, data });
+      }
+
       const { data, error } = await supabase
         .from('members')
         .select('*')
         .order('name', { ascending: true });
       if (error) throw error;
       return NextResponse.json({ success: true, data: data || [] });
+    }
+
+    // SQLite Fallback
+    if (id) {
+      const member = queryOne('SELECT * FROM members WHERE id = ?', [parseInt(id)]);
+      return NextResponse.json({ success: true, data: member });
     }
 
     const members = queryAll('SELECT * FROM members ORDER BY name ASC');

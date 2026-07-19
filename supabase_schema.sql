@@ -35,7 +35,8 @@ CREATE TABLE IF NOT EXISTS waste_deposits (
   weight DOUBLE PRECISION NOT NULL,
   points INTEGER NOT NULL,
   deposit_date TIMESTAMPTZ DEFAULT NOW(),
-  notes TEXT
+  notes TEXT,
+  status TEXT DEFAULT 'APPROVED' -- PENDING, APPROVED, REJECTED
 );
 
 -- 3. Raw Materials Table (Warehouse inventory)
