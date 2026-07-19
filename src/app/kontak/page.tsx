@@ -12,18 +12,25 @@ export default function Kontak() {
     e.preventDefault();
     if (formData.name && formData.email && formData.message) {
       setSubmitting(true);
-      
-      // Simulate network request
-      await new Promise((resolve) => setTimeout(resolve, 800));
-      
+
+      const text = `Halo Bank Sampah KGS, saya ingin bertanya:\n\n` +
+        `*Nama:* ${formData.name}\n` +
+        `*Email:* ${formData.email}\n` +
+        `*Pesan:* ${formData.message}`;
+
+      const waUrl = `https://wa.me/6282322013726?text=${encodeURIComponent(text)}`;
+
+      await new Promise((resolve) => setTimeout(resolve, 600));
+
       setSubmitting(false);
       setShowSuccessCheck(true);
-      
+
       setTimeout(() => {
         setShowSuccessCheck(false);
         setSubmitted(true);
         setFormData({ name: '', email: '', message: '' });
-      }, 1000);
+        window.open(waUrl, '_blank');
+      }, 800);
     }
   };
 
@@ -45,25 +52,25 @@ export default function Kontak() {
 
           {submitted ? (
             <div className="success-banner">
-              🎉 Terima kasih! Pesan Anda telah terkirim. Admin kami akan segera menghubungi Anda.
+              🎉 Terima kasih! Pesan Anda telah dialihkan ke WhatsApp. Admin kami akan segera menanggapi chat Anda.
             </div>
           ) : (
             <form onSubmit={handleSubmit}>
               <div className="form-group">
                 <label className="form-label">Nama Lengkap</label>
-                <input 
-                  type="text" 
-                  className="form-control" 
-                  required 
+                <input
+                  type="text"
+                  className="form-control"
+                  required
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 />
               </div>
               <div className="form-group">
                 <label className="form-label">Email Aktif</label>
-                <input 
-                  type="email" 
-                  className="form-control" 
+                <input
+                  type="email"
+                  className="form-control"
                   required
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -71,9 +78,9 @@ export default function Kontak() {
               </div>
               <div className="form-group">
                 <label className="form-label">Isi Pesan / Pertanyaan</label>
-                <textarea 
-                  className="form-control" 
-                  rows={5} 
+                <textarea
+                  className="form-control"
+                  rows={5}
                   required
                   value={formData.message}
                   onChange={(e) => setFormData({ ...formData, message: e.target.value })}
@@ -84,17 +91,17 @@ export default function Kontak() {
                 {submitting ? (
                   <>
                     <span className="spinner-btn"></span>
-                    Mengirim...
+                    Menghubungkan ke WhatsApp...
                   </>
                 ) : showSuccessCheck ? (
                   <span style={{ display: 'inline-flex', alignItems: 'center' }}>
                     <svg className="checkmark-svg" viewBox="0 0 24 24" fill="none">
-                      <path d="M5 13l4 4L19 7" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M5 13l4 4L19 7" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
-                    Terkirim!
+                    Terhubung!
                   </span>
                 ) : (
-                  'Kirim Pesan'
+                  '💬 Kirim ke WhatsApp'
                 )}
               </button>
             </form>
@@ -105,9 +112,9 @@ export default function Kontak() {
         <div className="info-block">
           <div className="card info-card">
             <h3>Kantor Pusat Unit 01</h3>
-            <p>📍 Jl. Lingkungan Lestari No. 12, Kelurahan Sukamaju, Bandung</p>
-            <p>📞 WhatsApp: 0812-3456-7890 (Admin)</p>
-            <p>✉️ Email: info@banksampaheco.org</p>
+            <p>📍 Jln . Sersan Zaini, RT. 27 No. 2819 Kelurahan 2 ilir</p>
+            <p>📞 WhatsApp: +62 823-2201-3726 (Admin)</p>
+            {/* <p>✉️ Email: info@banksampaheco.org</p> */}
           </div>
 
           <div className="card info-card">
@@ -121,13 +128,32 @@ export default function Kontak() {
           </div>
 
           {/* Map placeholder */}
-          <div className="card map-placeholder-card">
-            <div className="map-art">
-              🗺️ <span>[Peta Lokasi Bank Sampah KGS]</span>
-            </div>
+          <div className="card map-placeholder-card" style={{ padding: 0, overflow: 'hidden' }}>
+            <iframe 
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3984.4566367375253!2d104.77977!3d-2.9431057!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e3b764ee711124d%3A0xe54d249f7e52b210!2sJl.%20Sersan%20Zaini%20No.2819%2C%202%20Ilir%2C%20Kec.%20Ilir%20Tim.%20II%2C%20Kota%20Palembang%2C%20Sumatera%20Selatan%2030111!5e0!3m2!1sid!2sid!4v1710000000000!5m2!1sid!2sid"
+              width="100%" 
+              height="250" 
+              style={{ border: 0 }} 
+              allowFullScreen={true}
+              loading="lazy" 
+              referrerPolicy="no-referrer-when-downgrade"
+            ></iframe>
             <div style={{ padding: '16px' }}>
-              <h4 style={{ fontSize: '0.95rem', marginBottom: '4px' }}>Lokasi Strategis</h4>
-              <p style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>Dekat Balai Kelurahan Sukamaju, depan taman kota.</p>
+              <h4 style={{ fontSize: '0.95rem', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                Lokasi Strategis KGS Craft 📍
+              </h4>
+              <p style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>
+                Jln . Sersan Zaini, RT. 27 No. 2819 Kelurahan 2 ilir, Kota Palembang
+              </p>
+              <a 
+                href="https://maps.app.goo.gl/9UxuUjSLRumVVmXW6"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn-outline btn-sm"
+                style={{ marginTop: '10px', display: 'inline-flex', gap: '4px', fontSize: '0.8rem', padding: '6px 12px' }}
+              >
+                Buka di Google Maps Aplikasi ↗
+              </a>
             </div>
           </div>
         </div>

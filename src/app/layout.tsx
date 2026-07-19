@@ -22,7 +22,8 @@ export default function RootLayout({
   return (
     <html lang="id">
       <body style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-        <script dangerouslySetInnerHTML={{ __html: `
+        <script dangerouslySetInnerHTML={{
+          __html: `
           if (!sessionStorage.getItem('splash_shown')) {
             document.documentElement.classList.add('splash-loading');
           }
@@ -39,7 +40,7 @@ export default function RootLayout({
               <div className="footer-grid">
                 <div>
                   <h3 className="footer-title" style={{ color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    🌱 Bank Sampah KGS
+                    Bank Sampah KGS
                   </h3>
                   <p className="footer-text">
                     Mengubah sampah masyarakat menjadi berkah ekonomi dan menjaga kelestarian lingkungan demi masa depan bumi yang hijau dan lestari.
@@ -74,9 +75,9 @@ export default function RootLayout({
                   <p className="footer-text" style={{ fontSize: '0.9rem' }}>
                     Semua produk daur ulang kami juga dapat dibeli di Shopee Mall. Stok selalu sinkron secara real-time!
                   </p>
-                  <a 
-                    href="/admin" 
-                    className="btn btn-outline" 
+                  <a
+                    href="/admin"
+                    className="btn btn-outline"
                     style={{ padding: '6px 12px', fontSize: '0.85rem', marginTop: '8px' }}
                   >
                     Shopee Settings

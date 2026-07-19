@@ -91,7 +91,7 @@ export default function Navbar() {
     <nav className={`navbar ${scrolled ? 'scrolled' : ''}`}>
       <div className="container navbar-container">
         <Link href="/" className="logo" onClick={() => setMobileMenuOpen(false)}>
-          <span>🌱</span> Bank Sampah <span>KGS</span>
+          <span></span> Bank Sampah <span>KGS</span>
         </Link>
 
         {/* Mobile menu toggle */}

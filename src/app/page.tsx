@@ -66,8 +66,8 @@ export default async function Home() {
             <span className="hero-tag">🌱 Inisiatif Hijau & Mandiri</span>
             <h1>Poin Sampah Menjadi Berkah Ekonomi</h1>
             <p>
-              Selamat datang di <strong>Bank Sampah KGS</strong>. Kami membantu warga mengelola sampah 
-              rumah tangga secara bijak, mengonversinya menjadi saldo tabungan digital, dan mendaur 
+              Selamat datang di <strong>Bank Sampah KGS</strong>. Kami membantu warga mengelola sampah
+              rumah tangga secara bijak, mengonversinya menjadi saldo tabungan digital, dan mendaur
               ulang sampah plastik/organik menjadi produk bernilai tinggi.
             </p>
             <div className="hero-actions">
@@ -101,7 +101,7 @@ export default async function Home() {
               <div className="stat-number">{totalWeight} kg</div>
               <div className="stat-label">Total Sampah Terkumpul</div>
             </div>
-            
+
             <div className="stat-card">
               <div className="stat-icon">👥</div>
               <div className="stat-number">{totalMembers} Warga</div>
@@ -130,22 +130,64 @@ export default async function Home() {
                 <div className="badge-step">3</div>
               </div>
               <div className="step-labels-flow">
-                <div><strong>Pilah Sampah</strong><br/><small>Pisahkan plastik, kertas, logam di rumah</small></div>
-                <div><strong>Setor & Timbang</strong><br/><small>Bawa ke unit terdekat untuk ditimbang</small></div>
-                <div><strong>Dapatkan Saldo</strong><br/><small>Poin dicatat langsung ke saldo warga</small></div>
+                <div><strong>Pilah Sampah</strong><br /><small>Pisahkan plastik, kertas, logam di rumah</small></div>
+                <div><strong>Setor & Timbang</strong><br /><small>Bawa ke unit terdekat untuk ditimbang</small></div>
+                <div><strong>Dapatkan Saldo</strong><br /><small>Poin dicatat langsung ke saldo warga</small></div>
               </div>
             </div>
 
             <div className="guide-text">
               <h2>Mulai Menabung Sampah Hanya dengan 3 Langkah Mudah</h2>
               <p>
-                Kami menerima berbagai kategori sampah anorganik bersih. Saldo yang terkumpul 
-                dapat ditarik tunai atau digunakan untuk berbelanja produk kerajinan daur ulang 
+                Kami menerima berbagai kategori sampah anorganik bersih. Saldo yang terkumpul
+                dapat ditarik tunai atau digunakan untuk berbelanja produk kerajinan daur ulang
                 upcycle kami.
               </p>
               <Link href="/cara-menabung" className="btn btn-outline" style={{ marginTop: '16px' }}>
                 Pelajari Selengkapnya →
               </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 3.5. KGS Craft Profile Sections */}
+      <section className="kgs-craft-profile-section" style={{ backgroundColor: 'var(--muted-bg)', padding: '60px 0', borderTop: '1px solid var(--card-border)', borderBottom: '1px solid var(--card-border)' }}>
+        <div className="container">
+          <div className="header-block text-center" style={{ marginBottom: '40px' }}>
+            <span className="hero-tag" style={{ background: 'rgba(21, 128, 61, 0.1)', color: 'var(--primary)', padding: '6px 14px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: '700' }}>Profil KGS Craft</span>
+            <h2 style={{ fontSize: '2.2rem', marginTop: '10px' }}>Menginspirasi Melalui Karya Kreatif Daur Ulang</h2>
+            <p style={{ color: 'var(--muted)', maxWidth: '600px', margin: '8px auto 0 auto' }}>
+              Mengenal lebih dekat perjalanan, cita-cita, dan kegiatan produktif dari komunitas KGS Craft.
+            </p>
+          </div>
+
+          <div className="split-sections-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '30px' }}>
+            {/* Tentang KGS Craft */}
+            <div className="card profile-info-card" style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '32px', backgroundColor: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '16px', boxShadow: 'var(--shadow)' }}>
+              <div className="profile-card-icon" style={{ fontSize: '2.5rem', marginBottom: '16px' }}>🌟</div>
+              <h3 style={{ fontSize: '1.25rem', marginBottom: '12px', fontWeight: '800', fontFamily: 'Outfit, sans-serif' }}>TENTANG KGS CRAFT</h3>
+              <p style={{ color: 'var(--muted)', fontSize: '0.92rem', lineHeight: '1.6', flex: 1 }}>
+                <strong>KGS Craft</strong> KGS CRAFT adalah komunitas pemberdayaan ibu-ibu yang berawal dari kelompok tani pada tahun 2015. Bertransformasi menjadi bank sampah independen, komunitas ini kini mengelolah sampah menjadi produk kerajinan unik dan bernilai jual tinggi melalui kreativitas para anggotanya, sembari berkontribusi pada pelestarian lingkungan. KGS CRAFT juga aktif hingga saat ini mengikuti berbagai pameran hingga perlombaan.
+              </p>
+            </div>
+
+            {/* Sejarah KGS Craft */}
+            <div className="card profile-info-card" style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '32px', backgroundColor: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '16px', boxShadow: 'var(--shadow)' }}>
+              <div className="profile-card-icon" style={{ fontSize: '2.5rem', marginBottom: '16px' }}>📜</div>
+              <h3 style={{ fontSize: '1.25rem', marginBottom: '12px', fontWeight: '800', fontFamily: 'Outfit, sans-serif' }}>SEJARAH KGS CRAFT</h3>
+              <p style={{ color: 'var(--muted)', fontSize: '0.92rem', lineHeight: '1.6', flex: 1 }}>
+                KGS CRAFT mengawali perjalanannya pada tahun 2015 sebagai sebuah kelompok tani yang berfokus pada penjualan produk tanaman. Setahun kemudian, pada tahun 2016, muncul inisiatif dari Ibu Welis untuk membentuk bank sampah di tingkat kelurahan. Seiring berjalannya waktu, muncul gagasan inovatif untuk menaikkan nilai manfaat dari gerakan tersebut dengan mengolah sampah menjadi produk kerajinan kreatif. Langkah ini akhirnya mendapat dukungan penuh dari pihak kelurahan serta PT Pusri, yang turut memfasilitasi berbagai pelatihan keterampilan bagi para ibu-ibu hingga ke luar kota.
+              </p>
+            </div>
+
+            {/* Kegiatan KGS Craft */}
+            <div className="card profile-info-card" style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '32px', backgroundColor: 'var(--card-bg)', border: '1px solid var(--card-border)', borderRadius: '16px', boxShadow: 'var(--shadow)' }}>
+              <div className="profile-card-icon" style={{ fontSize: '2.5rem', marginBottom: '16px' }}>🎨</div>
+              <h3 style={{ fontSize: '1.25rem', marginBottom: '12px', fontWeight: '800', fontFamily: 'Outfit, sans-serif' }}>KEGIATAN KGS CRAFT</h3>
+              <p style={{ color: 'var(--muted)', fontSize: '0.92rem', lineHeight: '1.6', flex: 1 }}>
+                Kegiatan rutin kami meliputi penerimaan & penimbangan sampah terpilah warga setiap minggunya, workshop pelatihan pembuatan kerajinan daur ulang bagi warga & pemuda setempat, produksi produk dari sampah dan dijadikan kreatif dan inovatif, serta pemasaran produk daur ulang berkualitas secara offline dan online guna menyalurkan berkah tabungan ekonomi bagi warga penabung aktif.
+              </p>
             </div>
           </div>
         </div>
@@ -174,7 +216,7 @@ export default async function Home() {
           <div className="products-grid grid-cols-3">
             {products.map((prod) => (
               <div className="product-card" key={prod.id}>
-                <div 
+                <div
                   className="product-img-placeholder"
                   style={{ backgroundImage: `url(${prod.image_url || 'https://images.unsplash.com/photo-1544816155-12df9643f363?q=80&w=600&auto=format&fit=crop'})` }}
                 >
