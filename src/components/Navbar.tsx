@@ -137,7 +137,7 @@ export default function Navbar() {
               className={`nav-link ${isActive('/katalog') ? 'active' : ''}`}
               onClick={() => setMobileMenuOpen(false)}
             >
-              Katalog Daur Ulang
+              Katalog
             </Link>
           </li>
           <li>

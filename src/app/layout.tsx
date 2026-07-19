@@ -40,7 +40,7 @@ export default function RootLayout({
               <div className="footer-grid">
                 <div>
                   <h3 className="footer-title" style={{ color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    Bank Sampah KGS
+                    Bank Sampah <br />  KGS
                   </h3>
                   <p className="footer-text">
                     Mengubah sampah masyarakat menjadi berkah ekonomi dan menjaga kelestarian lingkungan demi masa depan bumi yang hijau dan lestari.
