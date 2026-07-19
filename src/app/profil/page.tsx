@@ -61,15 +61,47 @@ function ProfilContent() {
 
   // Check login on mount
   useEffect(() => {
-    const userStr = localStorage.getItem('banksampah_user');
-    if (!userStr) {
-      router.replace('/login');
-    } else {
-      const parsedUser = JSON.parse(userStr);
-      setCurrentUser(parsedUser);
-      fetchUserBalance(parsedUser.id);
-    }
-    setLoadingUser(false);
+    const initSession = async () => {
+      const userStr = localStorage.getItem('banksampah_user');
+      if (!userStr) {
+        router.replace('/login');
+        setLoadingUser(false);
+      } else {
+        let parsedUser = JSON.parse(userStr);
+        let resolvedId = parsedUser.id || parsedUser.member_id || parsedUser.memberId || 0;
+
+        if (!resolvedId || resolvedId === 0) {
+          let lookupQuery = '';
+          if (parsedUser.email) lookupQuery = `email=${encodeURIComponent(parsedUser.email)}`;
+          else if (parsedUser.phone) lookupQuery = `phone=${encodeURIComponent(parsedUser.phone)}`;
+
+          if (lookupQuery) {
+            try {
+              const res = await fetch(`/api/members?${lookupQuery}`);
+              if (res.ok) {
+                const resData = await res.json();
+                if (resData.success && resData.data) {
+                  resolvedId = resData.data.id;
+                  parsedUser = { ...parsedUser, id: resolvedId, name: resData.data.name, role: resData.data.role, balance: resData.data.balance };
+                  localStorage.setItem('banksampah_user', JSON.stringify(parsedUser));
+                  window.dispatchEvent(new Event('user-login'));
+                }
+              }
+            } catch (e) {
+              console.error(e);
+            }
+          }
+        }
+
+        setCurrentUser(parsedUser);
+        setLoadingUser(false);
+        if (resolvedId && resolvedId > 0) {
+          fetchUserBalance(resolvedId);
+        }
+      }
+    };
+
+    initSession();
 
     // Initial cart load
     const storedCart = localStorage.getItem('banksampah_cart');

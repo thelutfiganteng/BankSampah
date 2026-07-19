@@ -37,7 +37,7 @@ export async function GET(request: Request) {
         `)
         .order('deposit_date', { ascending: false });
       if (error) throw error;
-      
+
       const mapped = allDeposits?.map((dep: any) => ({
         ...dep,
         member_name: dep.members?.name || 'Unknown'
@@ -70,9 +70,13 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const { memberId, wasteType, weight, notes, status } = body;
-
+    console.log("POST /api/deposit body received:", body);
     if (!memberId || !wasteType || weight === undefined) {
-      return NextResponse.json({ success: false, error: 'Missing parameters' }, { status: 400 });
+      const missing = [];
+      if (!memberId) missing.push('memberId');
+      if (!wasteType) missing.push('wasteType');
+      if (weight === undefined) missing.push('weight');
+      return NextResponse.json({ success: false, error: `Missing parameters: ${missing.join(', ')}` }, { status: 400 });
     }
 
     const parsedWeight = parseFloat(weight);
@@ -127,7 +131,7 @@ export async function POST(request: Request) {
           .eq('waste_type', wasteType)
           .maybeSingle();
         if (rawError) throw rawError;
-        
+
         const currentStock = rawMat?.stock_kg || 0;
         const { error: updateRawError } = await supabase
           .from('raw_materials')

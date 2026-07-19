@@ -50,13 +50,42 @@ export default function JualSampah() {
     checkSession();
   }, []);
 
-  const checkSession = () => {
+  const checkSession = async () => {
     try {
       const stored = localStorage.getItem('banksampah_user');
       if (stored) {
-        const user = JSON.parse(stored) as User;
-        setCurrentUser(user);
-        fetchHistory(user.id);
+        let user = JSON.parse(stored);
+        let resolvedId = user.id || user.member_id || user.memberId || 0;
+
+        if (!resolvedId || resolvedId === 0) {
+          let lookupQuery = '';
+          if (user.email) lookupQuery = `email=${encodeURIComponent(user.email)}`;
+          else if (user.phone) lookupQuery = `phone=${encodeURIComponent(user.phone)}`;
+
+          if (lookupQuery) {
+            const res = await fetch(`/api/members?${lookupQuery}`);
+            if (res.ok) {
+              const resData = await res.json();
+              if (resData.success && resData.data) {
+                resolvedId = resData.data.id;
+                user = { ...user, id: resolvedId, name: resData.data.name, role: resData.data.role, balance: resData.data.balance };
+                localStorage.setItem('banksampah_user', JSON.stringify(user));
+                window.dispatchEvent(new Event('user-login'));
+              }
+            }
+          }
+        }
+
+        const mappedUser: User = {
+          id: parseInt(resolvedId as any) || 0,
+          name: user.name || 'User',
+          role: user.role || 'USER',
+          balance: user.balance || 0
+        };
+        setCurrentUser(mappedUser);
+        if (mappedUser.id && mappedUser.id > 0) {
+          fetchHistory(mappedUser.id);
+        }
       }
     } catch (e) {
       console.error('Failed reading user session', e);

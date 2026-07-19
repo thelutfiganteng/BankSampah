@@ -7,6 +7,8 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
+    const email = searchParams.get('email');
+    const phone = searchParams.get('phone');
 
     if (isSupabaseConfigured()) {
       if (id) {
@@ -14,6 +16,24 @@ export async function GET(request: Request) {
           .from('members')
           .select('*')
           .eq('id', parseInt(id))
+          .maybeSingle();
+        if (error) throw error;
+        return NextResponse.json({ success: true, data });
+      }
+      if (email) {
+        const { data, error } = await supabase
+          .from('members')
+          .select('*')
+          .eq('email', email)
+          .maybeSingle();
+        if (error) throw error;
+        return NextResponse.json({ success: true, data });
+      }
+      if (phone) {
+        const { data, error } = await supabase
+          .from('members')
+          .select('*')
+          .eq('phone', phone)
           .maybeSingle();
         if (error) throw error;
         return NextResponse.json({ success: true, data });
@@ -30,6 +50,14 @@ export async function GET(request: Request) {
     // SQLite Fallback
     if (id) {
       const member = queryOne('SELECT * FROM members WHERE id = ?', [parseInt(id)]);
+      return NextResponse.json({ success: true, data: member });
+    }
+    if (email) {
+      const member = queryOne('SELECT * FROM members WHERE email = ?', [email]);
+      return NextResponse.json({ success: true, data: member });
+    }
+    if (phone) {
+      const member = queryOne('SELECT * FROM members WHERE phone = ?', [phone]);
       return NextResponse.json({ success: true, data: member });
     }
 
