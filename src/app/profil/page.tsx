@@ -184,7 +184,7 @@ function ProfilContent() {
             <h2>Halo, {currentUser?.name || 'Pengguna'}!</h2>
             <p className="subtitle">
               {currentUser?.role === 'ADMIN' 
-                ? 'Administrator Bank Sampah Eco' 
+                ? 'Administrator Bank Sampah KGS' 
                 : `Nasabah Setia • Saldo: Rp ${new Intl.NumberFormat('id-ID').format(currentUser?.balance || 0)}`
               }
             </p>

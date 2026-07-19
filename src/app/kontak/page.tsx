@@ -123,7 +123,7 @@ export default function Kontak() {
           {/* Map placeholder */}
           <div className="card map-placeholder-card">
             <div className="map-art">
-              🗺️ <span>[Peta Lokasi Bank Sampah Eco]</span>
+              🗺️ <span>[Peta Lokasi Bank Sampah KGS]</span>
             </div>
             <div style={{ padding: '16px' }}>
               <h4 style={{ fontSize: '0.95rem', marginBottom: '4px' }}>Lokasi Strategis</h4>

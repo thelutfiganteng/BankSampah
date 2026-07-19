@@ -41,6 +41,7 @@ export default function SplashScreen() {
     // Unmount completely after fade-out transition finishes
     const removeTimer = setTimeout(() => {
       setShouldRender(false);
+      document.documentElement.classList.remove('splash-loading');
     }, duration + 800);
 
     return () => {
@@ -70,7 +71,7 @@ export default function SplashScreen() {
           </div>
         </div>
 
-        <h1 className="splash-title">BANK SAMPAH <span className="highlight">ECO</span></h1>
+        <h1 className="splash-title">BANK SAMPAH <span className="highlight">KGS</span></h1>
         <p className="splash-subtitle">Mengubah Sampah Menjadi Ekonomi Hijau</p>
 
         {/* loading progress bar */}

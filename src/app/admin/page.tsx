@@ -73,7 +73,7 @@ function AdminDashboardContent() {
           <span style={{ fontSize: '3.5rem' }}>🚫</span>
           <h2 style={{ color: 'var(--danger)', marginTop: '16px', fontSize: '1.6rem' }}>Akses Ditolak</h2>
           <p style={{ color: 'var(--muted)', margin: '14px 0 24px 0', lineHeight: '1.6', fontSize: '0.95rem' }}>
-            Halaman ini hanya dapat diakses oleh Administrator Unit Bank Sampah Eco. Anda saat ini masuk sebagai Nasabah biasa.
+            Halaman ini hanya dapat diakses oleh Administrator Unit Bank Sampah KGS. Anda saat ini masuk sebagai Nasabah biasa.
           </p>
           <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
             <Link href="/" className="btn btn-secondary">Kembali ke Beranda</Link>

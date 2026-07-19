@@ -28,7 +28,7 @@ export default function CaraMenabung() {
           <div className="step-card">
             <div className="step-number">02</div>
             <h3>Bawa ke Bank Sampah</h3>
-            <p>Kunjungi lokasi Bank Sampah Eco terdekat selama jam operasional. Bawa kartu anggota nasabah Anda (atau daftar baru dengan nomor handphone).</p>
+            <p>Kunjungi lokasi Bank Sampah KGS terdekat selama jam operasional. Bawa kartu anggota nasabah Anda (atau daftar baru dengan nomor handphone).</p>
           </div>
 
           <div className="step-card">

@@ -66,7 +66,7 @@ export default async function Home() {
             <span className="hero-tag">🌱 Inisiatif Hijau & Mandiri</span>
             <h1>Poin Sampah Menjadi Berkah Ekonomi</h1>
             <p>
-              Selamat datang di <strong>Bank Sampah Eco</strong>. Kami membantu warga mengelola sampah 
+              Selamat datang di <strong>Bank Sampah KGS</strong>. Kami membantu warga mengelola sampah 
               rumah tangga secara bijak, mengonversinya menjadi saldo tabungan digital, dan mendaur 
               ulang sampah plastik/organik menjadi produk bernilai tinggi.
             </p>

@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
-  
+
   const [cartCount, setCartCount] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -91,11 +91,11 @@ export default function Navbar() {
     <nav className={`navbar ${scrolled ? 'scrolled' : ''}`}>
       <div className="container navbar-container">
         <Link href="/" className="logo" onClick={() => setMobileMenuOpen(false)}>
-          <span>🌱</span> Bank Sampah <span>Eco</span>
+          <span>🌱</span> Bank Sampah <span>KGS</span>
         </Link>
 
         {/* Mobile menu toggle */}
-        <button 
+        <button
           className="mobile-toggle-btn"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           aria-label="Toggle Navigation"
@@ -105,8 +105,8 @@ export default function Navbar() {
 
         <ul className={`nav-links ${mobileMenuOpen ? 'mobile-open' : ''}`}>
           <li>
-            <Link 
-              href="/" 
+            <Link
+              href="/"
               className={`nav-link ${isActive('/') ? 'active' : ''}`}
               onClick={() => setMobileMenuOpen(false)}
             >
@@ -114,8 +114,8 @@ export default function Navbar() {
             </Link>
           </li>
           <li>
-            <Link 
-              href="/cara-menabung" 
+            <Link
+              href="/cara-menabung"
               className={`nav-link ${isActive('/cara-menabung') ? 'active' : ''}`}
               onClick={() => setMobileMenuOpen(false)}
             >
@@ -123,17 +123,17 @@ export default function Navbar() {
             </Link>
           </li>
           <li>
-            <Link 
-              href="/jual-sampah" 
+            <Link
+              href="/jual-sampah"
               className={`nav-link ${isActive('/jual-sampah') ? 'active' : ''}`}
               onClick={() => setMobileMenuOpen(false)}
             >
-              Jual Sampah 💰
+              Jual Sampah
             </Link>
           </li>
           <li>
-            <Link 
-              href="/katalog" 
+            <Link
+              href="/katalog"
               className={`nav-link ${isActive('/katalog') ? 'active' : ''}`}
               onClick={() => setMobileMenuOpen(false)}
             >
@@ -141,8 +141,8 @@ export default function Navbar() {
             </Link>
           </li>
           <li>
-            <Link 
-              href="/kontak" 
+            <Link
+              href="/kontak"
               className={`nav-link ${isActive('/kontak') ? 'active' : ''}`}
               onClick={() => setMobileMenuOpen(false)}
             >
@@ -153,20 +153,20 @@ export default function Navbar() {
           {/* Conditional Admin Link */}
           {currentUser && (
             <li>
-              <Link 
-                href="/profil" 
+              <Link
+                href="/profil"
                 className={`nav-link ${isActive('/profil') ? 'active' : ''}`}
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Profil Saya 👤
+                Profil Saya
               </Link>
             </li>
           )}
 
           {currentUser && currentUser.role === 'ADMIN' && (
             <li>
-              <Link 
-                href="/admin" 
+              <Link
+                href="/admin"
                 className={`nav-link ${isActive('/admin') ? 'active' : ''}`}
                 onClick={() => setMobileMenuOpen(false)}
               >

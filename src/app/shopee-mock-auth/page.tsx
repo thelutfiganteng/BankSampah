@@ -30,7 +30,7 @@ export default function ShopeeMockAuth() {
         <div className="auth-body">
           <h2>Permintaan Otorisasi Aplikasi</h2>
           <p className="app-request">
-            Aplikasi <strong>Bank Sampah EcoSync</strong> meminta izin untuk mengakses dan mengelola toko Shopee Anda.
+            Aplikasi <strong>Bank Sampah KGS</strong> meminta izin untuk mengakses dan mengelola toko Shopee Anda.
           </p>
 
           <div className="permission-list">

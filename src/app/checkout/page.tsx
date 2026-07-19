@@ -93,7 +93,7 @@ export default function Checkout() {
           <h1>Pesanan Berhasil Dibuat!</h1>
           <p className="order-number">ID Pesanan Anda: <strong>#{orderId}</strong></p>
           <p className="success-detail">
-            Terima kasih telah berbelanja di Bank Sampah Eco. Pesanan Anda sedang diproses 
+            Terima kasih telah berbelanja di Bank Sampah KGS. Pesanan Anda sedang diproses 
             dan stok telah disinkronisasikan langsung ke Shopee. Petugas kami akan menghubungi 
             Anda melalui nomor telepon yang disediakan.
           </p>

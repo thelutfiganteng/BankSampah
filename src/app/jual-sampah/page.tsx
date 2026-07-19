@@ -275,7 +275,7 @@ export default function JualSampah() {
               <li>Pilah sampah sesuai kategorinya sebelum disetorkan.</li>
               <li>Pastikan sampah wadah plastik (botol/gelas) dikosongkan dan dibilas ringan.</li>
               <li>Berat aktual akan diukur dan dicatat ulang oleh Admin saat verifikasi fisik.</li>
-              <li>Keputusan tim penimbang Bank Sampah Eco bersifat mutlak.</li>
+              <li>Keputusan tim penimbang Bank Sampah KGS bersifat mutlak.</li>
             </ul>
           </div>
         </div>

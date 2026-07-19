@@ -237,8 +237,9 @@ a:hover {
     gap: 30px;
   }
   .navbar-container {
-    flex-direction: column;
-    gap: 16px;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
   }
   .nav-links {
     flex-wrap: wrap;
@@ -1009,5 +1010,15 @@ a:hover {
 .nav-link:hover::after, .nav-link.active::after {
   width: 100% !important;
   left: 0 !important;
+}
+
+#layout-content {
+  opacity: 1;
+  transition: opacity 400ms ease-in-out;
+}
+
+html.splash-loading #layout-content {
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
 
