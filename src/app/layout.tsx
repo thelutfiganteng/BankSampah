@@ -85,8 +85,11 @@ export default function RootLayout({
                 </div>
               </div>
 
-              <div className="footer-bottom">
+              <div className="footer-bottom" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
                 <p>&copy; {new Date().getFullYear()} Bank Sampah KGS. Hak Cipta Dilindungi.</p>
+                <div style={{ display: 'flex', gap: '16px' }}>
+                  <a href="/kebijakan-privasi" style={{ color: 'var(--muted)', fontSize: '0.85rem', textDecoration: 'none' }}>Kebijakan Privasi</a>
+                </div>
                 <p>Dibuat dengan kepedulian lingkungan 💚</p>
               </div>
             </div>
