@@ -528,24 +528,25 @@ export async function testConnection(): Promise<MetaApiResponse> {
 async function saveMetaProductId(localProductId: number, metaProductId: string) {
   try {
     if (isSupabaseConfigured()) {
-      await supabase.from('products').update({ meta_product_id: metaProductId }).eq('id', localProductId);
+      const { error } = await supabase.from('products').update({ meta_product_id: metaProductId }).eq('id', localProductId);
+      if (error) console.warn(`[META CATALOG] Supabase meta_product_id update notice:`, error.message);
     } else {
       executeSql('UPDATE products SET meta_product_id = ? WHERE id = ?', [metaProductId, localProductId]);
     }
   } catch (e) {
-    console.error(`[META CATALOG] Failed to save meta_product_id for #${localProductId}:`, e);
+    console.warn(`[META CATALOG] Could not save meta_product_id for #${localProductId}:`, e);
   }
 }
 
 async function setMetaSyncStatus(localProductId: number, status: 'synced' | 'pending_sync' | 'not_synced') {
   try {
     if (isSupabaseConfigured()) {
-      await supabase.from('products').update({ meta_sync_status: status }).eq('id', localProductId);
+      const { error } = await supabase.from('products').update({ meta_sync_status: status }).eq('id', localProductId);
+      if (error) console.warn(`[META CATALOG] Supabase meta_sync_status update notice:`, error.message);
     } else {
       executeSql('UPDATE products SET meta_sync_status = ? WHERE id = ?', [status, localProductId]);
     }
   } catch (e) {
-    // Column may not exist yet — non-fatal
     console.warn(`[META CATALOG] Could not set sync status for #${localProductId}:`, e);
   }
 }

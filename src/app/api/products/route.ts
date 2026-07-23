@@ -94,7 +94,6 @@ export async function POST(request: Request) {
           price: parseInt(price),
           stock: parseInt(stock),
           image_url: imageUrl || null,
-          meta_sync_status: 'not_synced',
         }])
         .select()
         .single();
@@ -149,10 +148,21 @@ export async function POST(request: Request) {
 export async function PUT(request: Request) {
   try {
     const body = await request.json();
-    const { id, name, description, category, price, stock, imageUrl, variants } = body;
+    const { id, name, description, category, price, stock, imageUrl, variants, onlyStockSync } = body;
 
     if (!id) {
       return NextResponse.json({ success: false, error: 'Product ID is required' }, { status: 400 });
+    }
+
+    // ─── If only triggering Meta Catalog sync ──────
+    if (onlyStockSync) {
+      if (isMetaConfigured()) {
+        const syncResult = await syncLocalProductToMeta(id);
+        if (!syncResult.success) {
+          return NextResponse.json({ success: false, error: syncResult.error || 'Gagal mensinkronisasikan ke Meta Catalog' }, { status: 400 });
+        }
+      }
+      return NextResponse.json({ success: true, message: 'Meta sync completed' });
     }
 
     if (isSupabaseConfigured()) {
