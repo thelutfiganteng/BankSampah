@@ -46,7 +46,7 @@ export default function RootLayout({
                     Mengubah sampah masyarakat menjadi berkah ekonomi dan menjaga kelestarian lingkungan demi masa depan bumi yang hijau dan lestari.
                   </p>
                   <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
-                    <span>📍 Jl. Lingkungan Lestari No. 12, Bandung</span>
+                    <span>📍 Jln . Sersan Zaini, RT. 27 No. 2819 Kelurahan 2 ilir</span>
                   </div>
                 </div>
 
