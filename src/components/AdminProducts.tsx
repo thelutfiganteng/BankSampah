@@ -42,6 +42,40 @@ export default function AdminProducts() {
   const [statusMsg, setStatusMsg] = useState('');
   const [isError, setIsError] = useState(false);
   const [syncingId, setSyncingId] = useState<number | null>(null);
+  const [uploading, setUploading] = useState(false);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    setStatusMsg('');
+    setIsError(false);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (data.success && data.url) {
+        setImageUrl(data.url);
+        setStatusMsg('✅ Foto berhasil diunggah!');
+      } else {
+        setIsError(true);
+        setStatusMsg(data.error || 'Gagal mengunggah foto.');
+      }
+    } catch {
+      setIsError(true);
+      setStatusMsg('Gagal terhubung ke server upload.');
+    } finally {
+      setUploading(false);
+    }
+  };
 
   useEffect(() => {
     fetchProducts();
@@ -130,6 +164,7 @@ export default function AdminProducts() {
       category,
       price: minPrice,
       stock: totalStock,
+      imageUrl: imageUrl,
       image_url: imageUrl,
       variants: variants.map(v => ({
         ...v,
@@ -268,14 +303,64 @@ export default function AdminProducts() {
             </div>
 
             <div className="form-group">
-              <label className="form-label">URL Foto Produk</label>
+              <label className="form-label">Foto Produk (Upload File atau Tempel URL)</label>
+              
+              {/* File upload button */}
+              <div style={{ display: 'flex', gap: '10px', marginBottom: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                <label 
+                  className="btn btn-secondary" 
+                  style={{ 
+                    cursor: uploading ? 'not-allowed' : 'pointer', 
+                    display: 'inline-flex', 
+                    alignItems: 'center', 
+                    gap: '6px',
+                    fontSize: '0.88rem',
+                    padding: '8px 16px'
+                  }}
+                >
+                  <span>{uploading ? '⏳ Mengunggah...' : '📁 Pilih File Foto...'}</span>
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    onChange={handleFileUpload} 
+                    disabled={uploading} 
+                    style={{ display: 'none' }} 
+                  />
+                </label>
+                <span style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>Format: JPG, PNG, WEBP (Max 5MB)</span>
+              </div>
+
+              {/* URL text input */}
               <input 
                 type="url" 
                 className="form-control" 
-                placeholder="https://..."
+                placeholder="https://... (terisi otomatis setelah upload file)"
                 value={imageUrl}
                 onChange={(e) => setImageUrl(e.target.value)}
               />
+
+              {/* Image preview thumbnail */}
+              {imageUrl && (
+                <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--muted-bg)', padding: '8px 12px', borderRadius: '8px' }}>
+                  <img 
+                    src={imageUrl} 
+                    alt="Preview" 
+                    style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '6px', border: '1px solid var(--card-border)' }} 
+                  />
+                  <div style={{ flex: 1, overflow: 'hidden' }}>
+                    <div style={{ fontSize: '0.8rem', fontWeight: 600 }}>Preview Foto Produk</div>
+                    <div style={{ fontSize: '0.72rem', color: 'var(--muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{imageUrl}</div>
+                  </div>
+                  <button 
+                    type="button" 
+                    className="btn btn-outline" 
+                    style={{ padding: '2px 8px', fontSize: '0.75rem', color: 'var(--danger)' }}
+                    onClick={() => setImageUrl('')}
+                  >
+                    Hapus Foto
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Variants Section */}

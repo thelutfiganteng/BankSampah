@@ -76,7 +76,8 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { name, description, category, price, stock, imageUrl, variants } = body;
+    const { name, description, category, price, stock, variants } = body;
+    const imgUrl = body.imageUrl || body.image_url || null;
 
     if (!name || !category || price == null || stock == null) {
       return NextResponse.json({ success: false, error: 'Missing required fields' }, { status: 400 });
@@ -93,7 +94,7 @@ export async function POST(request: Request) {
           category,
           price: parseInt(price),
           stock: parseInt(stock),
-          image_url: imageUrl || null,
+          image_url: imgUrl,
         }])
         .select()
         .single();
@@ -117,7 +118,7 @@ export async function POST(request: Request) {
       executeSql(
         `INSERT INTO products (name, description, category, price, stock, image_url)
          VALUES (?, ?, ?, ?, ?, ?)`,
-        [name, description || '', category, parseInt(price), parseInt(stock), imageUrl || null]
+        [name, description || '', category, parseInt(price), parseInt(stock), imgUrl]
       );
       const lastRow = queryOne('SELECT last_insert_rowid() as id');
       productId = lastRow.id;
@@ -148,7 +149,8 @@ export async function POST(request: Request) {
 export async function PUT(request: Request) {
   try {
     const body = await request.json();
-    const { id, name, description, category, price, stock, imageUrl, variants, onlyStockSync } = body;
+    const { id, name, description, category, price, stock, variants, onlyStockSync } = body;
+    const imgUrl = body.imageUrl || body.image_url || null;
 
     if (!id) {
       return NextResponse.json({ success: false, error: 'Product ID is required' }, { status: 400 });
@@ -174,7 +176,7 @@ export async function PUT(request: Request) {
           category,
           price: parseInt(price),
           stock: parseInt(stock),
-          image_url: imageUrl || null,
+          image_url: imgUrl,
           updated_at: new Date().toISOString(),
         })
         .eq('id', id);
@@ -201,7 +203,7 @@ export async function PUT(request: Request) {
       executeSql(
         `UPDATE products SET name = ?, description = ?, category = ?, price = ?, stock = ?, image_url = ?, updated_at = CURRENT_TIMESTAMP
          WHERE id = ?`,
-        [name, description || '', category, parseInt(price), parseInt(stock), imageUrl || null, id]
+        [name, description || '', category, parseInt(price), parseInt(stock), imgUrl, id]
       );
 
       if (variants && Array.isArray(variants)) {
