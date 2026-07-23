@@ -32,7 +32,7 @@ export default function KebijakanPrivasi() {
           <ul style={{ paddingLeft: '20px', listStyleType: 'disc', color: 'var(--muted)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <li><strong>Data Profil Nasabah / Pembeli:</strong> Nama lengkap, alamat email aktif, nomor telepon (WhatsApp), dan alamat fisik pengiriman untuk keperluan pengantaran barang atau verifikasi penimbangan sampah.</li>
             <li><strong>Data Saldo & Transaksi:</strong> Catatan berat setoran sampah, poin/saldo tabungan sampah yang diperoleh, riwayat penukaran barang daur ulang, serta metode checkout transaksi.</li>
-            <li><strong>Data Integrasi Pihak Ketiga:</strong> ID unik dari integrasi Meta Commerce / Shopee untuk menyinkronkan data pemesanan, ketersediaan stok, dan status pesanan.</li>
+            <li><strong>Data Integrasi Pihak Ketiga:</strong> ID unik dari integrasi Meta Commerce untuk menyinkronkan data pemesanan, ketersediaan stok, dan status pesanan.</li>
           </ul>
         </section>
 
@@ -46,7 +46,7 @@ export default function KebijakanPrivasi() {
           <ul style={{ paddingLeft: '20px', listStyleType: 'disc', color: 'var(--muted)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <li>Memproses dan memverifikasi setoran estimasi sampah warga secara akurat di lokasi unit.</li>
             <li>Mengelola saldo tabungan digital warga dan memproses klaim penukaran kerajinan.</li>
-            <li>Memproses pemesanan barang daur ulang upcycle secara online dan melakukan sinkronisasi stok real-time ke saluran pemasaran eksternal (Meta Commerce / Shopee).</li>
+            <li>Memproses pemesanan barang daur ulang upcycle secara online dan melakukan sinkronisasi stok real-time ke saluran pemasaran eksternal (Meta Commerce - Facebook Shop & Instagram Shopping).</li>
             <li>Mempermudah koordinasi penjemputan sampah atau pengantaran paket pesanan via WhatsApp.</li>
           </ul>
         </section>
@@ -65,7 +65,7 @@ export default function KebijakanPrivasi() {
             4. Berbagi Informasi dengan Pihak Ketiga
           </h2>
           <p style={{ color: 'var(--muted)', margin: 0 }}>
-            Kami tidak akan pernah menjual, menyewakan, atau memperdagangkan data pribadi Anda kepada pihak lain. Kami hanya membagikan informasi terbatas dengan platform partner terintegrasi (seperti Meta Graph API / Shopee API) untuk keperluan sinkronisasi stok inventaris produk dan pembaharuan status pengiriman pesanan secara otomatis demi kelancaran proses transaksi belanja Anda.
+            Kami tidak akan pernah menjual, menyewakan, atau memperdagangkan data pribadi Anda kepada pihak lain. Kami hanya membagikan informasi terbatas dengan platform partner terintegrasi (seperti Meta Graph API) untuk keperluan sinkronisasi stok inventaris produk dan pembaharuan status pengiriman pesanan secara otomatis demi kelancaran proses transaksi belanja Anda.
           </p>
         </section>
 

@@ -6,7 +6,7 @@ import SplashScreen from '@/components/SplashScreen';
 
 export const metadata: Metadata = {
   title: 'Bank Sampah KGS - Poin Sampah Menjadi Berkah',
-  description: 'Setor sampah warga, dapatkan poin/saldo, dan beli produk hasil daur ulang berkualitas tinggi yang tersinkronisasi langsung dengan Shopee.',
+  description: 'Setor sampah warga, dapatkan poin/saldo, dan beli produk hasil daur ulang berkualitas tinggi yang tersinkronisasi langsung dengan Facebook Shop dan Instagram Shopping.',
 };
 
 export const viewport = {
@@ -71,17 +71,19 @@ export default function RootLayout({
                 </div>
 
                 <div>
-                  <h4 className="footer-title">Integrasi Shopee</h4>
+                  <h4 className="footer-title">Integrasi Marketplace</h4>
                   <p className="footer-text" style={{ fontSize: '0.9rem' }}>
-                    Semua produk daur ulang kami juga dapat dibeli di Shopee Mall. Stok selalu sinkron secara real-time!
+                    Produk daur ulang kami tersinkronisasi ke Facebook Shop dan Instagram Shopping secara real-time!
                   </p>
-                  <a
-                    href="/admin"
-                    className="btn btn-outline"
-                    style={{ padding: '6px 12px', fontSize: '0.85rem', marginTop: '8px' }}
-                  >
-                    Shopee Settings
-                  </a>
+                  <div style={{ display: 'flex', gap: '8px', marginTop: '8px', flexWrap: 'wrap' }}>
+                    <a
+                      href="/admin?tab=meta"
+                      className="btn btn-outline"
+                      style={{ padding: '6px 12px', fontSize: '0.85rem' }}
+                    >
+                      📘 Meta Commerce Console
+                    </a>
+                  </div>
                 </div>
               </div>
 

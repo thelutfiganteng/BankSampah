@@ -18,7 +18,8 @@ interface Product {
   price: number;
   stock: number;
   image_url: string;
-  shopee_item_id?: string;
+  meta_product_id?: string;
+  meta_sync_status?: string;
   variants: Variant[];
 }
 
@@ -161,7 +162,7 @@ export default function AdminProducts() {
   };
 
   const handleDeleteProduct = async (id: number) => {
-    if (!confirm('Apakah Anda yakin ingin menghapus produk ini? Listing di Shopee juga akan dihapus.')) return;
+    if (!confirm('Apakah Anda yakin ingin menghapus produk ini? Listing di Meta Catalog juga akan dihapus.')) return;
     setStatusMsg('');
     setIsError(false);
 
@@ -194,7 +195,7 @@ export default function AdminProducts() {
       });
       const data = await res.json();
       if (data.success) {
-        setStatusMsg('Sinkronisasi stok ke Shopee sukses!');
+        setStatusMsg('Sinkronisasi stok ke Meta Catalog sukses!');
         fetchProducts();
       } else {
         setIsError(true);
@@ -374,7 +375,7 @@ export default function AdminProducts() {
                     <th>Kategori</th>
                     <th>Harga Terendah</th>
                     <th>Total Stok</th>
-                    <th>Shopee Sync</th>
+                    <th>Meta Catalog Sync</th>
                     <th style={{ width: '220px' }}>Aksi</th>
                   </tr>
                 </thead>
@@ -397,9 +398,13 @@ export default function AdminProducts() {
                       <td><strong>Rp {new Intl.NumberFormat('id-ID').format(p.price)}</strong></td>
                       <td><strong>{p.stock} pcs</strong></td>
                       <td>
-                        {p.shopee_item_id ? (
-                          <span className="badge badge-success" style={{ cursor: 'help' }} title={`Item ID: ${p.shopee_item_id}`}>
-                            🟧 Synced
+                        {p.meta_sync_status === 'synced' || p.meta_product_id ? (
+                          <span className="badge badge-success" style={{ cursor: 'help' }} title={`Meta ID: ${p.meta_product_id}`}>
+                            📘 Synced
+                          </span>
+                        ) : p.meta_sync_status === 'pending_sync' ? (
+                          <span className="badge badge-warning">
+                            ⏳ Pending Sync
                           </span>
                         ) : (
                           <span className="badge badge-warning">

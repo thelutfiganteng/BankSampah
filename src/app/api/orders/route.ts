@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { executeSql, queryOne, queryAll } from '@/lib/db';
-import { syncStockToShopee } from '@/lib/shopee';
+import { syncStockToMeta, isMetaConfigured } from '@/lib/metaCatalog';
 import { supabase, isSupabaseConfigured } from '@/lib/supabaseClient';
 
 export async function GET(request: Request) {
@@ -20,7 +20,7 @@ export async function GET(request: Request) {
         if (!order) {
           return NextResponse.json({ success: false, error: 'Order not found' }, { status: 404 });
         }
-        
+
         const { data: items, error: itemsError } = await supabase
           .from('order_items')
           .select('*')
@@ -30,10 +30,10 @@ export async function GET(request: Request) {
         const productIds = Array.from(new Set(items?.map((item: any) => item.product_id).filter(Boolean) || []));
         const variantIds = Array.from(new Set(items?.map((item: any) => item.variant_id).filter(Boolean) || []));
 
-        const { data: productsData } = productIds.length > 0 
+        const { data: productsData } = productIds.length > 0
           ? await supabase.from('products').select('id, name').in('id', productIds)
           : { data: [] };
-        
+
         const { data: variantsData } = variantIds.length > 0
           ? await supabase.from('product_variants').select('id, name').in('id', variantIds)
           : { data: [] };
@@ -68,10 +68,10 @@ export async function GET(request: Request) {
         const productIds = Array.from(new Set(items?.map((item: any) => item.product_id).filter(Boolean) || []));
         const variantIds = Array.from(new Set(items?.map((item: any) => item.variant_id).filter(Boolean) || []));
 
-        const { data: productsData } = productIds.length > 0 
+        const { data: productsData } = productIds.length > 0
           ? await supabase.from('products').select('id, name').in('id', productIds)
           : { data: [] };
-        
+
         const { data: variantsData } = variantIds.length > 0
           ? await supabase.from('product_variants').select('id, name').in('id', variantIds)
           : { data: [] };
@@ -110,7 +110,7 @@ export async function GET(request: Request) {
     const orders = email
       ? queryAll('SELECT * FROM orders WHERE customer_email = ? ORDER BY created_at DESC', [email])
       : queryAll('SELECT * FROM orders ORDER BY created_at DESC');
-      
+
     const result = orders.map(order => {
       const items = queryAll(`
         SELECT oi.*, p.name as product_name, pv.name as variant_name
@@ -148,9 +148,9 @@ export async function POST(request: Request) {
             .maybeSingle();
           if (varError) throw varError;
           if (!variant || (variant.stock || 0) < item.quantity) {
-            return NextResponse.json({ 
-              success: false, 
-              error: `Stok tidak mencukupi untuk varian: ${variant?.name || 'Varian tidak ditemukan'}` 
+            return NextResponse.json({
+              success: false,
+              error: `Stok tidak mencukupi untuk varian: ${variant?.name || 'Varian tidak ditemukan'}`
             }, { status: 400 });
           }
         } else {
@@ -161,9 +161,9 @@ export async function POST(request: Request) {
             .maybeSingle();
           if (prodError) throw prodError;
           if (!product || (product.stock || 0) < item.quantity) {
-            return NextResponse.json({ 
-              success: false, 
-              error: `Stok tidak mencukupi untuk produk: ${product?.name || 'Produk tidak ditemukan'}` 
+            return NextResponse.json({
+              success: false,
+              error: `Stok tidak mencukupi untuk produk: ${product?.name || 'Produk tidak ditemukan'}`
             }, { status: 400 });
           }
         }
@@ -210,7 +210,7 @@ export async function POST(request: Request) {
         .select()
         .single();
       if (orderError) throw orderError;
-      
+
       const orderId = newOrder.id;
 
       // 4. Insert items, deduct stock, and sync
@@ -256,8 +256,8 @@ export async function POST(request: Request) {
             .eq('id', item.productId);
           if (updateProdError) throw updateProdError;
 
-          // Sync to Shopee
-          await syncStockToShopee(item.productId, item.variantId);
+          // Sync to Meta (non-blocking)
+          if (isMetaConfigured()) syncStockToMeta(item.productId).catch(e => console.error('[META]', e));
         } else {
           // Deduct main product stock
           const { data: product, error: selectProdError } = await supabase
@@ -274,8 +274,8 @@ export async function POST(request: Request) {
             .eq('id', item.productId);
           if (updateProdError) throw updateProdError;
 
-          // Sync to Shopee
-          await syncStockToShopee(item.productId, null);
+          // Sync to Meta (non-blocking)
+          if (isMetaConfigured()) syncStockToMeta(item.productId).catch(e => console.error('[META]', e));
         }
       }
 
@@ -287,17 +287,17 @@ export async function POST(request: Request) {
       if (item.variantId) {
         const variant = queryOne('SELECT stock, name FROM product_variants WHERE id = ?', [item.variantId]);
         if (!variant || variant.stock < item.quantity) {
-          return NextResponse.json({ 
-            success: false, 
-            error: `Stok tidak mencukupi untuk varian: ${variant?.name || 'Varian tidak ditemukan'}` 
+          return NextResponse.json({
+            success: false,
+            error: `Stok tidak mencukupi untuk varian: ${variant?.name || 'Varian tidak ditemukan'}`
           }, { status: 400 });
         }
       } else {
         const product = queryOne('SELECT stock, name FROM products WHERE id = ?', [item.productId]);
         if (!product || product.stock < item.quantity) {
-          return NextResponse.json({ 
-            success: false, 
-            error: `Stok tidak mencukupi untuk produk: ${product?.name || 'Produk tidak ditemukan'}` 
+          return NextResponse.json({
+            success: false,
+            error: `Stok tidak mencukupi untuk produk: ${product?.name || 'Produk tidak ditemukan'}`
           }, { status: 400 });
         }
       }
@@ -340,10 +340,10 @@ export async function POST(request: Request) {
         executeSql('UPDATE product_variants SET stock = stock - ? WHERE id = ?', [item.quantity, item.variantId]);
         const totalStockRow = queryOne('SELECT SUM(stock) as total FROM product_variants WHERE product_id = ?', [item.productId]);
         executeSql('UPDATE products SET stock = ? WHERE id = ?', [totalStockRow.total || 0, item.productId]);
-        await syncStockToShopee(item.productId, item.variantId);
+        if (isMetaConfigured()) syncStockToMeta(item.productId).catch(e => console.error('[META]', e));
       } else {
         executeSql('UPDATE products SET stock = stock - ? WHERE id = ?', [item.quantity, item.productId]);
-        await syncStockToShopee(item.productId, null);
+        if (isMetaConfigured()) syncStockToMeta(item.productId).catch(e => console.error('[META]', e));
       }
     }
 

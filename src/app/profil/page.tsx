@@ -451,7 +451,7 @@ function ProfilContent() {
                       </div>
                       <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                         <span className="badge badge-success" style={{ backgroundColor: '#e8f5e9', color: '#2e7d32', padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: '600' }}>
-                          ✅ Stok Sinkron ke Shopee
+                          ✅ Stok Sinkron Meta Catalog
                         </span>
                         <span className={`status-badge-admin status-${order.status.toLowerCase()}`} style={{ fontSize: '0.8rem', padding: '4px 8px', borderRadius: '4px' }}>
                           {order.status === 'PENDING' ? '⏳ Diproses' : order.status === 'SHIPPED' ? '🚚 Dikirim' : '✅ Selesai'}

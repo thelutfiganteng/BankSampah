@@ -5,14 +5,13 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import AdminWaste from '@/components/AdminWaste';
 import AdminProducts from '@/components/AdminProducts';
-import AdminShopee from '@/components/AdminShopee';
+import AdminMeta from '@/components/AdminMeta';
 
 function AdminDashboardContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  
-  const [activeTab, setActiveTab] = useState<'waste' | 'products' | 'shopee'>('waste');
-  const [oauthStatus, setOauthStatus] = useState({ success: false, error: '' });
+
+  const [activeTab, setActiveTab] = useState<'waste' | 'products' | 'meta'>('waste');
   const [authorized, setAuthorized] = useState<boolean | null>(null);
 
   // Authentication & Role verification guard
@@ -40,19 +39,10 @@ function AdminDashboardContent() {
   useEffect(() => {
     if (authorized === true) {
       const tabParam = searchParams.get('tab');
-      if (tabParam === 'shopee') {
-        setActiveTab('shopee');
-      } else if (tabParam === 'products') {
+      if (tabParam === 'products') {
         setActiveTab('products');
-      }
-
-      const successParam = searchParams.get('oauth_success');
-      const errorParam = searchParams.get('error');
-
-      if (successParam === 'true') {
-        setOauthStatus({ success: true, error: '' });
-      } else if (errorParam) {
-        setOauthStatus({ success: false, error: errorParam });
+      } else if (tabParam === 'meta') {
+        setActiveTab('meta');
       }
     }
   }, [searchParams, authorized]);
@@ -77,8 +67,8 @@ function AdminDashboardContent() {
           </p>
           <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
             <Link href="/" className="btn btn-secondary">Kembali ke Beranda</Link>
-            <button 
-              className="btn btn-primary" 
+            <button
+              className="btn btn-primary"
               onClick={() => {
                 localStorage.removeItem('banksampah_user');
                 window.dispatchEvent(new Event('user-login'));
@@ -97,40 +87,28 @@ function AdminDashboardContent() {
     <div className="container admin-dashboard animate-fade-in" style={{ paddingTop: '30px' }}>
       <div className="dashboard-header">
         <h1>Dashboard Administrasi Internal</h1>
-        <p>Kelola nasabah, setoran sampah, stok produk daur ulang, dan sinkronisasi otomatis toko Shopee.</p>
+        <p>Kelola nasabah, setoran sampah, stok produk daur ulang, dan integrasi Meta Commerce (Facebook & Instagram Shop).</p>
       </div>
-
-      {/* OAuth callback status alerts */}
-      {oauthStatus.success && (
-        <div className="alert-success-dashboard">
-          🎉 <strong>Sukses Otorisasi!</strong> Toko Shopee Anda berhasil terhubung dengan sistem Bank Sampah. Token akses telah disimpan dengan aman.
-        </div>
-      )}
-      {oauthStatus.error && (
-        <div className="alert-error-dashboard">
-          ❌ <strong>Gagal Menghubungkan Shopee:</strong> {oauthStatus.error}
-        </div>
-      )}
 
       {/* Tabs Menu */}
       <div className="tabs-container">
-        <button 
+        <button
           className={`tab-btn ${activeTab === 'waste' ? 'active' : ''}`}
           onClick={() => setActiveTab('waste')}
         >
           ♻️ Sistem Bank Sampah
         </button>
-        <button 
+        <button
           className={`tab-btn ${activeTab === 'products' ? 'active' : ''}`}
           onClick={() => setActiveTab('products')}
         >
           📦 Katalog Produk & Varian
         </button>
-        <button 
-          className={`tab-btn ${activeTab === 'shopee' ? 'active' : ''}`}
-          onClick={() => setActiveTab('shopee')}
+        <button
+          className={`tab-btn ${activeTab === 'meta' ? 'active' : ''}`}
+          onClick={() => setActiveTab('meta')}
         >
-          🟧 Integrasi Shopee Console
+          📘 Meta Commerce
         </button>
       </div>
 
@@ -138,7 +116,7 @@ function AdminDashboardContent() {
       <div className="tab-content" style={{ marginTop: '24px' }}>
         {activeTab === 'waste' && <AdminWaste />}
         {activeTab === 'products' && <AdminProducts />}
-        {activeTab === 'shopee' && <AdminShopee />}
+        {activeTab === 'meta' && <AdminMeta />}
       </div>
 
       <style jsx>{`
@@ -204,7 +182,7 @@ function AdminDashboardContent() {
 
 export default function AdminDashboard() {
   return (
-    <Suspense fallback={<div className="container" style={{paddingTop:'50px'}}>Loading Dashboard...</div>}>
+    <Suspense fallback={<div className="container" style={{ paddingTop: '50px' }}>Loading Dashboard...</div>}>
       <AdminDashboardContent />
     </Suspense>
   );

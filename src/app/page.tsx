@@ -229,9 +229,9 @@ export default async function Home() {
                     <span className="prod-price">Rp {new Intl.NumberFormat('id-ID').format(prod.price)}</span>
                     <span className="prod-stock">Stok: {prod.stock}</span>
                   </div>
-                  {prod.shopee_item_id && (
-                    <div className="shopee-sync-badge">
-                      🟧 Tersinkron ke Shopee
+                  {(prod.meta_product_id || prod.meta_sync_status === 'synced') && (
+                    <div className="shopee-sync-badge" style={{ backgroundColor: 'rgba(66,103,178,0.1)', color: '#1877f2' }}>
+                      📘 Tersinkron ke Meta Catalog
                     </div>
                   )}
                   <Link href="/katalog" className="btn btn-primary btn-block" style={{ marginTop: '14px', width: '100%' }}>

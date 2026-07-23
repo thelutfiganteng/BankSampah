@@ -94,7 +94,7 @@ export default function Checkout() {
           <p className="order-number">ID Pesanan Anda: <strong>#{orderId}</strong></p>
           <p className="success-detail">
             Terima kasih telah berbelanja di Bank Sampah KGS. Pesanan Anda sedang diproses 
-            dan stok telah disinkronisasikan langsung ke Shopee. Petugas kami akan menghubungi 
+            dan stok telah disinkronisasikan langsung ke Meta Catalog (Facebook & Instagram Shop). Petugas kami akan menghubungi 
             Anda melalui nomor telepon yang disediakan.
           </p>
           <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginTop: '20px' }}>

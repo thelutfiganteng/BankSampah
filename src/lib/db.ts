@@ -180,35 +180,6 @@ export function initDb() {
     );
   `);
 
-  // 6. Shopee Settings Table
-  runSql(`
-    CREATE TABLE IF NOT EXISTS shopee_settings (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      partner_id TEXT,
-      partner_key TEXT,
-      access_token TEXT,
-      refresh_token TEXT,
-      token_expires_at INTEGER DEFAULT 0,
-      shop_id TEXT,
-      is_sandbox INTEGER DEFAULT 1,
-      is_simulated INTEGER DEFAULT 1,
-      is_active INTEGER DEFAULT 0
-    );
-  `);
-
-  // 7. Shopee Sync Logs Table
-  runSql(`
-    CREATE TABLE IF NOT EXISTS shopee_sync_logs (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      product_id INTEGER NOT NULL,
-      variant_id INTEGER,
-      action TEXT NOT NULL, -- "CREATE", "UPDATE", "DELETE", "STOCK_SYNC"
-      status TEXT NOT NULL, -- "SUCCESS", "FAILED"
-      message TEXT,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    );
-  `);
-
   // 8. Orders Table
   runSql(`
     CREATE TABLE IF NOT EXISTS orders (
@@ -289,7 +260,7 @@ export function initDb() {
   const productsCount = queryOne('SELECT COUNT(*) as count FROM products');
   if (productsCount?.count === 0) {
     console.log('Seeding initial products...');
-    
+
     // Product 1: Tas Belanja Daur Ulang (Has variants)
     executeSql(`
       INSERT INTO products (name, description, category, price, stock, image_url) 
@@ -302,7 +273,7 @@ export function initDb() {
       30,
       'https://images.unsplash.com/photo-1544816155-12df9643f363?q=80&w=600&auto=format&fit=crop'
     ]);
-    
+
     const lastProduct1 = queryOne('SELECT last_insert_rowid() as id');
     if (lastProduct1) {
       executeSql(`
@@ -327,7 +298,7 @@ export function initDb() {
       50,
       'https://images.unsplash.com/photo-1599599810769-bcde5a160d32?q=80&w=600&auto=format&fit=crop'
     ]);
-    
+
     const lastProduct2 = queryOne('SELECT last_insert_rowid() as id');
     if (lastProduct2) {
       executeSql(`
@@ -337,24 +308,52 @@ export function initDb() {
     }
   }
 
-  // 13. Seed default Shopee settings if empty
-  const shopeeSettingsCount = queryOne('SELECT COUNT(*) as count FROM shopee_settings');
-  if (shopeeSettingsCount?.count === 0) {
-    executeSql(`
-      INSERT INTO shopee_settings (partner_id, partner_key, access_token, refresh_token, token_expires_at, shop_id, is_sandbox, is_simulated, is_active)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `, [
-      'MOCK_PARTNER_ID',
-      'MOCK_PARTNER_KEY',
-      'MOCK_ACCESS_TOKEN',
-      'MOCK_REFRESH_TOKEN',
-      Math.floor(Date.now() / 1000) + 14400, // 4 hours from now
-      'MOCK_SHOP_ID',
-      1, // is_sandbox = true
-      1, // is_simulated = true
-      1  // is_active = true
-    ]);
+  // ─── 14. Meta Commerce Settings Table ──────────────────────
+  runSql(`
+    CREATE TABLE IF NOT EXISTS meta_settings (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      app_id TEXT DEFAULT '',
+      app_secret TEXT DEFAULT '',
+      access_token TEXT DEFAULT '',
+      catalog_id TEXT DEFAULT '',
+      is_active INTEGER DEFAULT 0,
+      verify_token TEXT DEFAULT ''
+    );
+  `);
+
+  // ─── 15. Meta Commerce Sync Logs Table ─────────────────────
+  runSql(`
+    CREATE TABLE IF NOT EXISTS meta_sync_logs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      product_id INTEGER NOT NULL,
+      variant_id INTEGER,
+      action TEXT NOT NULL,
+      status TEXT NOT NULL,
+      message TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
+
+  // ─── 16. Add Meta integration columns to products (safe PRAGMA check) ─
+  const productCols = queryAll<{ name: string }>('PRAGMA table_info(products)');
+  const colNames = productCols.map(c => c.name);
+
+  if (!colNames.includes('meta_product_id')) {
+    runSql('ALTER TABLE products ADD COLUMN meta_product_id TEXT;');
+    console.log('Added meta_product_id column to products table.');
   }
+  if (!colNames.includes('meta_sync_status')) {
+    runSql("ALTER TABLE products ADD COLUMN meta_sync_status TEXT DEFAULT 'not_synced';");
+    console.log('Added meta_sync_status column to products table.');
+  }
+  // Keep legacy column for backward compat if it existed
+  if (!colNames.includes('meta_item_id')) {
+    try { runSql('ALTER TABLE products ADD COLUMN meta_item_id TEXT;'); } catch { /* may exist */ }
+  }
+
+  // NOTE: Meta Catalog API credentials are now loaded from environment variables
+  // (.env.local) and are NOT stored in the database. See: META_CATALOG_ID,
+  // META_SYSTEM_USER_TOKEN, META_APP_ID, META_APP_SECRET in .env.local
 }
 
 // Automatically initialize database when database helper is imported

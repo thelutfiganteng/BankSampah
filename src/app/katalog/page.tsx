@@ -10,7 +10,6 @@ interface Variant {
   sku: string;
   price: number;
   stock: number;
-  shopee_model_id: string;
 }
 
 interface Product {
@@ -21,7 +20,8 @@ interface Product {
   price: number;
   stock: number;
   image_url: string;
-  shopee_item_id: string;
+  meta_product_id?: string;
+  meta_sync_status?: string;
   variants: Variant[];
 }
 
@@ -250,9 +250,9 @@ export default function Katalog() {
                     </div>
                   </div>
 
-                  {product.shopee_item_id && (
-                    <div className="shopee-badge">
-                      <span>🟧</span> Sinkron dengan Shopee Store
+                  {(product.meta_product_id || product.meta_sync_status === 'synced') && (
+                    <div className="shopee-badge" style={{ background: 'rgba(66,103,178,0.08)', color: '#1877f2', border: '1px solid rgba(66,103,178,0.2)' }}>
+                      <span>📘</span> Sinkron dengan Meta Catalog
                     </div>
                   )}
 
