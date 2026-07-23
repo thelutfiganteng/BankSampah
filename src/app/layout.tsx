@@ -70,7 +70,7 @@ export default function RootLayout({
                   </ul>
                 </div>
 
-                <div>
+                {/* <div>
                   <h4 className="footer-title">Integrasi Marketplace</h4>
                   <p className="footer-text" style={{ fontSize: '0.9rem' }}>
                     Produk daur ulang kami tersinkronisasi ke Facebook Shop dan Instagram Shopping secara real-time!
@@ -84,7 +84,7 @@ export default function RootLayout({
                       📘 Meta Commerce Console
                     </a>
                   </div>
-                </div>
+                </div> */}
               </div>
 
               <div className="footer-bottom" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
